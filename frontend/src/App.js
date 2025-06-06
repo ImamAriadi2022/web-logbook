@@ -3,7 +3,8 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import LandingPages from "./pages/LandingPages";
 import Login from "./pages/Login";
 import Sign from "./pages/Sign";
-import User from "./pages/User"; // Tambahkan import User
+import User from "./pages/User";
+import Admin from "./pages/Admin"; 
 
 function App() {
   return (
@@ -12,7 +13,8 @@ function App() {
         <Route path="/" element={<LandingPages />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Sign />} />
-        <Route path="/*" element={<User />} /> {/* Tambahkan route user */}
+        <Route path="/admin/*" element={<Admin />} /> 
+        <Route path="/*" element={<User />} />
         {/* Tambahkan route lain sesuai kebutuhan */}
       </Routes>
     </Router>

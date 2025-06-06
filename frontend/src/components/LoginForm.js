@@ -90,9 +90,11 @@ const LoginForm = () => {
 
     setTimeout(() => {
       setLoading(false);
-      // Logika statis: username = user, password = 123
+      // Logika statis: admin = admin/123, user = user/123
       if (!form.username || !form.password) {
         setError("Email/Username dan Password wajib diisi.");
+      } else if (form.username === "admin" && form.password === "123") {
+        navigate("/admin/dashboard");
       } else if (form.username === "user" && form.password === "123") {
         navigate("/dashboard");
       } else if (form.password.length < 4) {
