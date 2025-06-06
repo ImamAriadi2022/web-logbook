@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import { Form, Button, Alert, InputGroup } from "react-bootstrap";
-import { Link } from "react-router-dom";
+import { Form, Button, Alert, InputGroup, Modal } from "react-bootstrap";
+import { Link, useNavigate } from "react-router-dom";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 const styles = {
@@ -10,51 +10,56 @@ const styles = {
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    padding: "2rem 0",
+    padding: "1rem 0", // lebih kecil
   },
   container: {
     display: "flex",
     background: "#fff",
-    borderRadius: "1.2rem",
-    boxShadow: "0 4px 32px rgba(0,0,0,0.10)",
+    borderRadius: "0.8rem", // lebih kecil
+    boxShadow: "0 2px 16px rgba(0,0,0,0.08)", // lebih ringan
     overflow: "hidden",
     width: "100%",
-    maxWidth: 900,
-    minHeight: 520,
+    maxWidth: 700, // lebih kecil
+    minHeight: 380, // lebih kecil
     flexDirection: "row",
   },
   left: {
     flex: 1,
-    background: "var(--color-secondary)",
+    backgroundImage: "url('https://images.unsplash.com/photo-1715234635719-65936785adc2?q=80&w=900&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D')",
+    backgroundSize: "cover",
+    backgroundPosition: "center",
+    backgroundRepeat: "no-repeat",
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
     justifyContent: "center",
-    padding: "2.5rem 2rem",
+    padding: "1.2rem 1rem", // lebih kecil
     borderRight: "1px solid #e0e0e0",
   },
   logo: {
-    width: 72,
-    height: 72,
-    marginBottom: "1.2rem",
+    width: 48, // lebih kecil
+    height: 48,
+    marginBottom: "0.7rem",
     objectFit: "contain",
+    borderRadius: "15%",
   },
   leftTitle: {
     color: "var(--color-accent)",
     fontWeight: 800,
-    fontSize: "1.6rem",
-    marginBottom: "0.7rem",
+    fontSize: "1.1rem", // lebih kecil
+    marginBottom: "0.4rem",
     textAlign: "center",
+    textShadow: "-1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff",
   },
   leftDesc: {
-    color: "var(--color-text)",
-    fontSize: "1.08rem",
+    color: "#fff",
+    fontSize: "0.9rem", // lebih kecil
     textAlign: "center",
     opacity: 0.9,
   },
   right: {
     flex: 1,
-    padding: "2.5rem 2rem",
+    padding: "1.2rem 1rem", // lebih kecil
     display: "flex",
     flexDirection: "column",
     justifyContent: "center",
@@ -62,23 +67,23 @@ const styles = {
   formTitle: {
     color: "var(--color-accent)",
     fontWeight: 700,
-    fontSize: "1.35rem",
-    marginBottom: "1.2rem",
+    fontSize: "1.05rem", // lebih kecil
+    marginBottom: "0.7rem",
     textAlign: "center",
   },
   formSub: {
     color: "var(--color-primary)",
-    fontSize: "1.05rem",
+    fontSize: "0.92rem", // lebih kecil
     textAlign: "center",
-    marginBottom: "1.7rem",
+    marginBottom: "1.1rem",
     opacity: 0.85,
   },
   input: {
-    borderRadius: "0.7rem",
-    border: "1.5px solid #e0e0e0",
-    marginBottom: "1.1rem",
-    padding: "0.7rem 1rem",
-    fontSize: "1rem",
+    borderRadius: "0.5rem",
+    border: "1.2px solid #e0e0e0",
+    marginBottom: "0.7rem",
+    padding: "0.5rem 0.8rem",
+    fontSize: "0.95rem",
     transition: "border-color 0.2s",
   },
   inputFocus: {
@@ -92,10 +97,10 @@ const styles = {
     border: "none",
     fontWeight: 700,
     borderRadius: "2rem",
-    padding: "0.8rem",
-    fontSize: "1.08rem",
-    marginTop: "0.5rem",
-    marginBottom: "0.7rem",
+    padding: "0.6rem",
+    fontSize: "1rem",
+    marginTop: "0.3rem",
+    marginBottom: "0.5rem",
     transition: "background 0.2s",
   },
   buttonHover: {
@@ -103,8 +108,8 @@ const styles = {
   },
   loginLink: {
     textAlign: "center",
-    fontSize: "1rem",
-    marginTop: "0.7rem",
+    fontSize: "0.95rem",
+    marginTop: "0.5rem",
   },
   loginAnchor: {
     color: "var(--color-accent)",
@@ -114,8 +119,8 @@ const styles = {
   },
   privacy: {
     textAlign: "center",
-    fontSize: "0.95rem",
-    marginTop: "1.2rem",
+    fontSize: "0.85rem",
+    marginTop: "0.7rem",
     color: "#888",
   },
   eyeButton: {
@@ -123,8 +128,8 @@ const styles = {
     border: "none",
     boxShadow: "none",
     color: "#888",
-    fontSize: "1.1rem",
-    padding: "0 0.8rem",
+    fontSize: "1rem",
+    padding: "0 0.6rem",
     display: "flex",
     alignItems: "center",
   },
@@ -132,14 +137,15 @@ const styles = {
     container: {
       flexDirection: "column",
       minHeight: "unset",
+      maxWidth: 98 + "vw",
     },
     left: {
       borderRight: "none",
       borderBottom: "1px solid #e0e0e0",
-      padding: "2rem 1.2rem",
+      padding: "1rem 0.7rem",
     },
     right: {
-      padding: "2rem 1.2rem",
+      padding: "1rem 0.7rem",
     },
   },
 };
@@ -159,6 +165,8 @@ const SignForm = () => {
   const [focus, setFocus] = useState({});
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -201,16 +209,21 @@ const SignForm = () => {
     setLoading(true);
     setTimeout(() => {
       setLoading(false);
-      setSuccess("Pendaftaran berhasil! Silakan login.");
+      setShowModal(true);
       setForm(initialForm);
     }, 1200);
+  };
+
+  const handleGoToLogin = () => {
+    setShowModal(false);
+    navigate("/login");
   };
 
   return (
     <section style={styles.wrapper}>
       <div style={styles.container}>
         <div style={styles.left}>
-          <img src="/logo-aoe.png" alt="Logo LogAOE" style={styles.logo} />
+          <img src="img/logo.png" alt="Logo LogAOE" style={styles.logo} />
           <h1 style={styles.leftTitle}>Selamat Datang di LogAOE</h1>
           <p style={styles.leftDesc}>
             Digitalisasi logbookmu dengan lebih mudah dan aman.
@@ -222,7 +235,6 @@ const SignForm = () => {
             Kelola logbook watchroom secara digital, cepat, dan aman.
           </div>
           {error && <Alert variant="danger">{error}</Alert>}
-          {success && <Alert variant="success">{success}</Alert>}
           <Form onSubmit={handleSubmit} autoComplete="off">
             <Form.Group>
               <Form.Label>Nama Lengkap</Form.Label>
@@ -328,15 +340,21 @@ const SignForm = () => {
               Masuk di sini
             </Link>
           </div>
-          <div style={styles.privacy}>
-            Dengan mendaftar, Anda menyetujui{" "}
-            <a href="/privacy" style={{ color: "var(--color-accent)" }}>
-              Kebijakan Privasi
-            </a>
-            .
-          </div>
         </div>
       </div>
+      <Modal show={showModal} onHide={() => setShowModal(false)} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>Pendaftaran Berhasil</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          Anda berhasil mendaftar! Silakan login di halaman login.
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="primary" onClick={handleGoToLogin}>
+            Ke Halaman Login
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </section>
   );
 };

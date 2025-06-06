@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import { Form, Button, Alert} from "react-bootstrap";
+import { Form, Button, Alert } from "react-bootstrap";
 import { FaLock, FaUser } from "react-icons/fa";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const styles = {
   wrapper: {
@@ -73,6 +73,7 @@ const LoginForm = () => {
   const [form, setForm] = useState({ username: "", password: "", remember: false });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -87,15 +88,16 @@ const LoginForm = () => {
     setError("");
     setLoading(true);
 
-    // Dummy validation
     setTimeout(() => {
       setLoading(false);
+      // Logika statis: username = user, password = 123
       if (!form.username || !form.password) {
         setError("Email/Username dan Password wajib diisi.");
+      } else if (form.username === "user" && form.password === "123") {
+        navigate("/dashboard");
       } else if (form.password.length < 4) {
         setError("Password minimal 4 karakter.");
       } else {
-        // Simulasi login gagal
         setError("Email/Username atau Password salah.");
       }
     }, 900);
