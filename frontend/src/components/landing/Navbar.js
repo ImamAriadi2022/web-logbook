@@ -21,7 +21,7 @@ const styles = {
     animation: "navbarPopUp 0.5s forwards",
   },
   brand: {
-    color: "var(--color-accent)",
+    color: "#fff",
     fontWeight: 700,
     fontSize: "1.5rem",
     display: "flex",
@@ -43,6 +43,7 @@ const styles = {
     background: "#fff",
     borderRadius: "50%",
     padding: "2px",
+    color: "#fff",
   },
   ctaButton: {
     backgroundColor: "var(--color-cta)",

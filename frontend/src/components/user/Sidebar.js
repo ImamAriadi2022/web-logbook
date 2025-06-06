@@ -1,6 +1,6 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
-import { FaTachometerAlt, FaBook, FaPlusCircle, FaCalendarAlt, FaFileAlt, FaUserCog } from "react-icons/fa";
+import { FaTachometerAlt, FaBook, FaPlusCircle, FaCalendarAlt, FaFileAlt, FaUserCog, FaSignOutAlt } from "react-icons/fa";
 
 const sidebarItems = [
   {
@@ -63,10 +63,33 @@ const styles = {
     background: "rgba(255,255,255,0.13)",
     color: "#fff",
   },
+  logout: {
+    display: "flex",
+    alignItems: "flex-start",
+    gap: "1rem",
+    padding: "0.9rem 1.1rem",
+    borderRadius: "0.6rem",
+    cursor: "pointer",
+    background: "#e63946",
+    color: "#fff",
+    fontWeight: 600,
+    fontSize: "1.05rem",
+    border: "none",
+    outline: "none",
+    marginTop: "auto",
+    transition: "background 0.18s",
+  },
 };
 
 const Sidebar = () => {
   const location = useLocation();
+
+  const handleLogout = () => {
+    // Hapus token/session di localStorage jika ada
+    localStorage.removeItem("token");
+    // Redirect ke halaman login
+    window.location.href = "/";
+  };
 
   return (
     <aside style={styles.sidebar}>
@@ -83,6 +106,15 @@ const Sidebar = () => {
           {item.label}
         </Link>
       ))}
+      <button
+        onClick={handleLogout}
+        style={styles.logout}
+      >
+        <span style={{ fontSize: "1.25rem", marginTop: "2px" }}>
+          <FaSignOutAlt />
+        </span>
+        Logout
+      </button>
     </aside>
   );
 };

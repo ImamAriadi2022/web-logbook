@@ -81,7 +81,7 @@ const Profil = () => {
                 placeholder="Ulangi password baru"
               />
             </Form.Group>
-            <Button type="submit" style={{ width: "100%", background: "var(--color-cta)", border: "none", fontWeight: 700 }}>
+            <Button type="submit" style={{ width: "100%", border: "none", fontWeight: 700 }}>
               Simpan Perubahan
             </Button>
           </Form>
