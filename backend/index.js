@@ -2,6 +2,7 @@ const express = require("express");
 const dotenv = require("dotenv");
 const cors = require("cors"); // Tambahkan ini
 const userRoutes = require("./routes/userRoutes");
+const logBookRoutes = require("./routes/logBookRoutes");
 const db = require("./config/dbConfig");
 
 // Konfigurasi dotenv
@@ -14,6 +15,7 @@ const PORT = process.env.PORT || 5000;
 app.use(cors()); // Tambahkan middleware CORS
 app.use(express.json());
 app.use("/api/users", userRoutes);
+app.use("/api/logbooks", logBookRoutes);
 
 // Koneksi ke database
 db.connect((err) => {
@@ -40,6 +42,19 @@ app.get("/", (req, res) => {
         <li><strong>GET</strong> <code>/api/users/users</code>: Mengambil semua pengguna</li>
         <li><strong>PUT</strong> <code>/api/users/users/:id</code>: Mengedit pengguna (hanya untuk admin)</li>
     </ul>
+
+    <p>Gunakan endpoint berikut untuk mennguji endpoint logbook:</p>
+    <ul>
+        <li><strong>POST</strong> <code>/api/logbooks/add</code>: Menambahkan logbook baru</li>
+        <li><strong>GET</strong> <code>/api/logbooks</code>: Mengambil semua logbook</li>
+        <li><strong>GET</strong> <code>/api/logbooks/:id</code>: Mengambil logbook berdasarkan ID</li>
+        <li><strong>GET</strong> <code>/api/logbooks/user/:userId</code>: Mengambil logbook berdasarkan user_id</li>
+        <li><strong>PUT</strong> <code>/api/logbooks/:id</code>: Mengedit logbook</li>
+        <li><strong>DELETE</strong> <code>/api/logbooks/:id</code>: Menghapus logbook</li>
+    </ul>
+
+    <h2>Status Server</h2>
+    <p>Status Server: <span style="color: green;">Berjalan</span></p>
     <p>Status Database: <span style="color: green;">Terhubung</span></p>
   `);
 });

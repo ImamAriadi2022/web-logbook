@@ -104,7 +104,7 @@ const LoginForm = () => {
       }
 
       // Simpan ID pengguna dan role di localStorage
-      localStorage.setItem("userId", data.user.id);
+      localStorage.setItem("user_id", data.user.id);
       localStorage.setItem("userRole", data.user.role);
 
       // Redirect berdasarkan role

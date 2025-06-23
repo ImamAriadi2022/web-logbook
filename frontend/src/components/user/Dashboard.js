@@ -1,45 +1,63 @@
-import React, { useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import { Card, Row, Col, Button, ListGroup } from "react-bootstrap";
 import { FaBook, FaCalendarAlt, FaPlusCircle } from "react-icons/fa";
 import { Link } from "react-router-dom";
-// Import logbook data
-import { initialLogs } from "./DetailLogbook";
-
-// Ambil ringkasan dari data logbook
-const getSummary = (logs) => {
-  const totalLog = logs.length;
-  const shiftSet = new Set(logs.map((log) => log.jam));
-  const petugasSet = new Set(logs.flatMap((log) => log.petugas));
-  return {
-    totalLog,
-    totalShift: shiftSet.size,
-    totalPetugas: petugasSet.size,
-  };
-};
-
-// Ambil aktivitas terbaru dari logbook
-const getAktivitasTerbaru = (logs, max = 5) => {
-  return logs
-    .map((log) => ({
-      id: log.id,
-      waktu: `${log.tanggal} ${log.jam.split(" ")[0]}`,
-      aktivitas: log.report.kejadian,
-      petugas: log.petugas.join(", "),
-    }))
-    .sort((a, b) => (a.waktu < b.waktu ? 1 : -1))
-    .slice(0, max);
-};
 
 const Dashboard = () => {
-  // Gunakan useMemo agar tidak hitung ulang setiap render
-  const summary = useMemo(() => getSummary(initialLogs), []);
-  const aktivitasTerbaru = useMemo(() => getAktivitasTerbaru(initialLogs), []);
+  const [logs, setLogs] = useState([]);
+  const [summary, setSummary] = useState({ totalLog: 0, totalShift: 0, totalPetugas: 0 });
+  const [aktivitasTerbaru, setAktivitasTerbaru] = useState([]);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const fetchLogs = async () => {
+      try {
+        const response = await fetch("http://localhost:5000/api/logbooks");
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.message || "Terjadi kesalahan saat mengambil logbook");
+        }
+
+        setLogs(data.logbooks);
+
+        // Hitung ringkasan data
+        const totalLog = data.logbooks.length;
+        const shiftSet = new Set(data.logbooks.map((log) => log.jam));
+        const petugasSet = new Set(data.logbooks.flatMap((log) => log.petugas));
+        setSummary({
+          totalLog,
+          totalShift: shiftSet.size,
+          totalPetugas: petugasSet.size,
+        });
+
+        // Ambil aktivitas terbaru
+        const aktivitas = data.logbooks
+          .map((log) => ({
+            id: log.id,
+            waktu: `${log.tanggal} ${log.jam.split(" ")[0]}`,
+            aktivitas: log.report?.kejadian || "Tidak ada kejadian",
+            petugas: Array.isArray(log.petugas) ? log.petugas.join(", ") : log.petugas || "Tidak ada petugas",
+          }))
+          .sort((a, b) => (a.waktu < b.waktu ? 1 : -1))
+          .slice(0, 5);
+
+        setAktivitasTerbaru(aktivitas);
+      } catch (error) {
+        console.error("Error fetching logbooks:", error.message);
+        setError(error.message);
+      }
+    };
+
+    fetchLogs();
+  }, []);
 
   return (
     <div style={{ padding: "2rem" }}>
       <h2 style={{ fontWeight: 700, color: "var(--color-accent)", marginBottom: "1.5rem" }}>
         Dashboard
       </h2>
+      {error && <div style={{ color: "red", marginBottom: "1rem" }}>{error}</div>}
       <Row className="mb-4" xs={1} md={3} style={{ gap: "1rem 0" }}>
         <Col>
           <Card style={{ textAlign: "center", borderLeft: "5px solid var(--color-accent)" }}>

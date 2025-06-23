@@ -2,16 +2,13 @@ import React, { useEffect, useState } from "react";
 import { Card, Row, Col, ListGroup } from "react-bootstrap";
 import { FaTachometerAlt, FaUser, FaClipboardList, FaFileAlt } from "react-icons/fa";
 
-// Dummy data, ganti dengan data asli dari backend/props jika ada
-const dummyLogbook = [
-  { id: 1, tanggal: "2025-01-04", jam: "10:29", user: "Siti", laporan: "Wildlife hazard di Runway 04" },
-  { id: 2, tanggal: "2025-01-05", jam: "08:10", user: "Andi", laporan: "Pengecekan alat pemadam" },
-];
-
 const Dashboard = () => {
   const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [logbooks, setLogbooks] = useState([]);
+  const [loadingUsers, setLoadingUsers] = useState(true);
+  const [loadingLogbooks, setLoadingLogbooks] = useState(true);
 
+  // Fetch data pengguna dari backend
   useEffect(() => {
     const fetchUsers = async () => {
       try {
@@ -26,16 +23,38 @@ const Dashboard = () => {
       } catch (error) {
         console.error("Error fetching users:", error.message);
       } finally {
-        setLoading(false);
+        setLoadingUsers(false);
       }
     };
 
     fetchUsers();
   }, []);
 
-  const totalLogbook = dummyLogbook.length;
+  // Fetch data logbook dari backend
+  useEffect(() => {
+    const fetchLogbooks = async () => {
+      try {
+        const response = await fetch("http://localhost:5000/api/logbooks");
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.message || "Terjadi kesalahan saat mengambil data logbook");
+        }
+
+        setLogbooks(data.logbooks);
+      } catch (error) {
+        console.error("Error fetching logbooks:", error.message);
+      } finally {
+        setLoadingLogbooks(false);
+      }
+    };
+
+    fetchLogbooks();
+  }, []);
+
+  const totalLogbook = logbooks.length;
   const totalUser = users.length;
-  const laporanTerakhir = dummyLogbook[0];
+  const laporanTerakhir = logbooks[0];
 
   return (
     <div style={{ padding: "2rem" }}>
@@ -73,14 +92,20 @@ const Dashboard = () => {
           Logbook Terbaru
         </Card.Header>
         <ListGroup variant="flush">
-          {dummyLogbook.map((log) => (
-            <ListGroup.Item key={log.id}>
-              <div style={{ fontWeight: 600 }}>{log.laporan}</div>
-              <div style={{ fontSize: "0.97rem", color: "#888" }}>
-                {log.tanggal} {log.jam} &mdash; {log.user}
-              </div>
-            </ListGroup.Item>
-          ))}
+          {loadingLogbooks ? (
+            <ListGroup.Item>Memuat data logbook...</ListGroup.Item>
+          ) : logbooks.length > 0 ? (
+            logbooks.map((log) => (
+              <ListGroup.Item key={log.id}>
+                <div style={{ fontWeight: 600 }}>{log.laporan}</div>
+                <div style={{ fontSize: "0.97rem", color: "#888" }}>
+                  {log.tanggal} {log.jam} &mdash; {log.user}
+                </div>
+              </ListGroup.Item>
+            ))
+          ) : (
+            <ListGroup.Item>Data logbook tidak tersedia.</ListGroup.Item>
+          )}
         </ListGroup>
       </Card>
       <Card>
@@ -88,7 +113,7 @@ const Dashboard = () => {
           Daftar Pengguna
         </Card.Header>
         <ListGroup variant="flush">
-          {loading ? (
+          {loadingUsers ? (
             <ListGroup.Item>Memuat data pengguna...</ListGroup.Item>
           ) : users.length > 0 ? (
             users.map((user) => (

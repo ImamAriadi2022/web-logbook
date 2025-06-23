@@ -62,6 +62,7 @@ const loginUser = (req, res) => {
     }
 
     const user = results[0];
+    const user_id = user.id; // Simpan user.id ke dalam variabel user_id
 
     // Verifikasi password
     bcrypt.compare(password, user.password, (err, isMatch) => {
@@ -75,7 +76,7 @@ const loginUser = (req, res) => {
 
       res.status(200).json({
         message: "Login berhasil",
-        user: { id: user.id, name: user.name, email: user.email, role: user.role },
+        user: { id: user_id, name: user.name, email: user.email, role: user.role },
       });
     });
   });

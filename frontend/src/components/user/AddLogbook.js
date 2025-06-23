@@ -99,47 +99,41 @@ const AddLogbook = () => {
   };
 
   // Submit handler
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     setSuccess("");
-    // Validasi sederhana
-    if (
-      !watchroom.hari ||
-      !watchroom.tanggal ||
-      !watchroom.jam ||
-      watchroom.petugas.some((p) => !p) ||
-      !watchroom.koja ||
-      !watchroom.regu ||
-      watchroom.flights.some(
-        (f) =>
-          !f.time ||
-          !f.operator ||
-          !f.aircraftType ||
-          !f.flightNumber ||
-          !f.depArrFrom ||
-          !f.to ||
-          !f.rwUse
-      ) ||
-      !report.hariKejadian ||
-      !report.tanggalKejadian ||
-      !report.waktuKejadian ||
-      !report.cuaca ||
-      !report.kejadian ||
-      !report.noPnb ||
-      !report.tipePesawat ||
-      !report.fasePenerbangan ||
-      !report.kerusakanPesawat ||
-      !report.jenisFasilitas ||
-      !report.kerusakanFasilitas ||
-      !report.rincianKejadian
-    ) {
-      setError("Semua field wajib diisi.");
+  
+    // Ambil user_id dari local storage
+    const user_id = localStorage.getItem("user_id");
+  
+    if (!user_id) {
+      setError("User ID tidak ditemukan. Silakan login ulang.");
       return;
     }
-    setSuccess("Logbook dan laporan berhasil disimpan!");
-    setWatchroom(initialWatchroom);
-    setReport(initialReport);
+  
+    try {
+      const response = await fetch("http://localhost:5000/api/logbooks/add", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ user_id, watchroom, report }),
+      });
+  
+      const data = await response.json();
+  
+      if (!response.ok) {
+        throw new Error(data.message || "Terjadi kesalahan saat menyimpan logbook");
+      }
+  
+      setSuccess("Logbook dan laporan berhasil disimpan!");
+      setWatchroom(initialWatchroom);
+      setReport(initialReport);
+    } catch (error) {
+      console.error("Error saving logbook:", error.message);
+      setError(error.message);
+    }
   };
 
   return (
@@ -519,7 +513,17 @@ const AddLogbook = () => {
             </Form.Group>
           </Col>
         </Row>
-        <Button type="submit" style={{ width: "100%", background: "var(--color-cta)", border: "none", fontWeight: 700, marginTop: 20 }}>
+        <Button
+          type="submit"
+          style={{
+            width: "100%",
+            background: "var(--color-cta, #007BFF)", // Pastikan warna terlihat
+            border: "none",
+            fontWeight: 700,
+            marginTop: 20,
+            display: "block", // Pastikan tombol dirender
+          }}
+        >
           Simpan Logbook & Laporan
         </Button>
       </Form>
