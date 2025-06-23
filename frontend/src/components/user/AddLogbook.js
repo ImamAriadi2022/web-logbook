@@ -241,7 +241,7 @@ const AddLogbook = () => {
           </Col>
         </Row>
         <hr style={{ margin: "2.5rem 0 1.5rem 0", borderTop: "2px dashed var(--color-accent, #023E8A)" }} />
-        <h5 style={{ marginTop: 20, marginBottom: 10 }}>Aktivitas Penerbangan / Kejadian</h5>
+        <h5 style={{ marginTop: 20, marginBottom: 10 }}>Aircraft Movement</h5>
         {watchroom.flights.map((flight, idx) => (
           <div key={idx} style={{ border: "1px solid #eee", borderRadius: 8, padding: 12, marginBottom: 12 }}>
             <Row>

@@ -70,39 +70,54 @@ const styles = {
 };
 
 const LoginForm = () => {
-  const [form, setForm] = useState({ username: "", password: "", remember: false });
+  const [form, setForm] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
+    const { name, value } = e.target;
     setForm((prev) => ({
       ...prev,
-      [name]: type === "checkbox" ? checked : value,
+      [name]: value,
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     setLoading(true);
 
-    setTimeout(() => {
-      setLoading(false);
-      // Logika statis: admin = admin/123, user = user/123
-      if (!form.username || !form.password) {
-        setError("Email/Username dan Password wajib diisi.");
-      } else if (form.username === "admin" && form.password === "123") {
-        navigate("/admin/dashboard");
-      } else if (form.username === "user" && form.password === "123") {
-        navigate("/dashboard");
-      } else if (form.password.length < 4) {
-        setError("Password minimal 4 karakter.");
-      } else {
-        setError("Email/Username atau Password salah.");
+    try {
+      const response = await fetch("http://localhost:5000/api/users/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(form),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Terjadi kesalahan saat login");
       }
-    }, 900);
+
+      // Simpan ID pengguna dan role di localStorage
+      localStorage.setItem("userId", data.user.id);
+      localStorage.setItem("userRole", data.user.role);
+
+      // Redirect berdasarkan role
+      if (data.user.role === "admin") {
+        navigate("/admin");
+      } else {
+        navigate("/dashboard");
+      }
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -112,16 +127,16 @@ const LoginForm = () => {
         <div style={styles.title}>Masuk ke LogAOE</div>
         {error && <Alert variant="danger">{error}</Alert>}
         <Form onSubmit={handleSubmit} autoComplete="off">
-          <Form.Group className="mb-3" controlId="loginUsername">
+          <Form.Group className="mb-3" controlId="loginEmail">
             <Form.Label>
               <FaUser style={styles.inputIcon} />
-              Email / Username
+              Email
             </Form.Label>
             <Form.Control
-              type="text"
-              placeholder="Masukkan email atau username"
-              name="username"
-              value={form.username}
+              type="email"
+              placeholder="Masukkan email"
+              name="email"
+              value={form.email}
               onChange={handleChange}
               autoFocus
             />
@@ -139,19 +154,6 @@ const LoginForm = () => {
               onChange={handleChange}
             />
           </Form.Group>
-          <div style={styles.options}>
-            <Form.Check
-              type="checkbox"
-              label="Ingat saya"
-              name="remember"
-              checked={form.remember}
-              onChange={handleChange}
-              id="rememberMe"
-            />
-            <Link to="/forgot-password" style={styles.link}>
-              Lupa password?
-            </Link>
-          </div>
           <Button
             type="submit"
             style={styles.ctaButton}

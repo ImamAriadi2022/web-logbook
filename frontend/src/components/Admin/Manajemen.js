@@ -1,23 +1,38 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Card, Table, Button, Modal, Form } from "react-bootstrap";
 import { FaUser, FaEdit, FaTrash } from "react-icons/fa";
 
-// Dummy data pengguna, ganti dengan data asli dari backend jika ada
-const dummyUsers = [
-  { id: 1, nama: "Siti", email: "siti@pkppk.com" },
-  { id: 2, nama: "Andi", email: "andi@pkppk.com" },
-  { id: 3, nama: "Budi", email: "budi@pkppk.com" },
-];
-
 const Manajemen = () => {
-  const [users, setUsers] = useState(dummyUsers);
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editUser, setEditUser] = useState(null);
-  const [form, setForm] = useState({ nama: "", email: "" });
+  const [form, setForm] = useState({ name: "", email: "", role: "" });
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const response = await fetch("http://localhost:5000/api/users/users");
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.message || "Terjadi kesalahan saat mengambil data pengguna");
+        }
+
+        setUsers(data.users);
+      } catch (error) {
+        console.error("Error fetching users:", error.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUsers();
+  }, []);
 
   const handleShowModal = (user = null) => {
     setEditUser(user);
-    setForm(user ? { ...user } : { nama: "", email: "" });
+    setForm(user ? { ...user } : { name: "", email: "", role: "user" });
     setShowModal(true);
   };
 
@@ -30,19 +45,55 @@ const Manajemen = () => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (editUser) {
-      setUsers(users.map(u => u.id === editUser.id ? { ...form, id: editUser.id } : u));
-    } else {
-      setUsers([...users, { ...form, id: Date.now() }]);
+    try {
+      const method = editUser ? "PUT" : "POST";
+      const endpoint = editUser
+        ? `http://localhost:5000/api/users/users/${editUser.id}`
+        : "http://localhost:5000/api/users/register";
+
+      const response = await fetch(endpoint, {
+        method,
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(form),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Terjadi kesalahan saat menyimpan data pengguna");
+      }
+
+      if (editUser) {
+        setUsers(users.map((u) => (u.id === editUser.id ? { ...form, id: editUser.id } : u)));
+      } else {
+        setUsers([...users, { ...form, id: data.user.id }]);
+      }
+
+      handleCloseModal();
+    } catch (error) {
+      console.error("Error saving user:", error.message);
     }
-    handleCloseModal();
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
     if (window.confirm("Yakin ingin menghapus user ini?")) {
-      setUsers(users.filter(u => u.id !== id));
+      try {
+        const response = await fetch(`http://localhost:5000/api/users/${id}`, {
+          method: "DELETE",
+        });
+
+        if (!response.ok) {
+          throw new Error("Terjadi kesalahan saat menghapus pengguna");
+        }
+
+        setUsers(users.filter((u) => u.id !== id));
+      } catch (error) {
+        console.error("Error deleting user:", error.message);
+      }
     }
   };
 
@@ -63,28 +114,35 @@ const Manajemen = () => {
                 <th>#</th>
                 <th>Nama</th>
                 <th>Email</th>
+                <th>Role</th>
                 <th style={{ width: 120 }}>Aksi</th>
               </tr>
             </thead>
             <tbody>
-              {users.map((u, i) => (
-                <tr key={u.id}>
-                  <td>{i + 1}</td>
-                  <td>{u.nama}</td>
-                  <td>{u.email}</td>
-                  <td>
-                    <Button variant="warning" size="sm" onClick={() => handleShowModal(u)} style={{ marginRight: 8 }}>
-                      <FaEdit />
-                    </Button>
-                    <Button variant="danger" size="sm" onClick={() => handleDelete(u.id)}>
-                      <FaTrash />
-                    </Button>
-                  </td>
-                </tr>
-              ))}
-              {users.length === 0 && (
+              {loading ? (
                 <tr>
-                  <td colSpan={4} style={{ textAlign: "center", color: "#888" }}>Belum ada pengguna.</td>
+                  <td colSpan={5} style={{ textAlign: "center", color: "#888" }}>Memuat data...</td>
+                </tr>
+              ) : users.length > 0 ? (
+                users.map((u, i) => (
+                  <tr key={u.id}>
+                    <td>{i + 1}</td>
+                    <td>{u.name}</td>
+                    <td>{u.email}</td>
+                    <td>{u.role}</td>
+                    <td>
+                      <Button variant="warning" size="sm" onClick={() => handleShowModal(u)} style={{ marginRight: 8 }}>
+                        <FaEdit />
+                      </Button>
+                      <Button variant="danger" size="sm" onClick={() => handleDelete(u.id)}>
+                        <FaTrash />
+                      </Button>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={5} style={{ textAlign: "center", color: "#888" }}>Belum ada pengguna.</td>
                 </tr>
               )}
             </tbody>
@@ -101,8 +159,8 @@ const Manajemen = () => {
             <Form.Group className="mb-3">
               <Form.Label>Nama</Form.Label>
               <Form.Control
-                name="nama"
-                value={form.nama}
+                name="name"
+                value={form.name}
                 onChange={handleChange}
                 required
                 placeholder="Nama lengkap"
@@ -118,6 +176,19 @@ const Manajemen = () => {
                 required
                 placeholder="Email"
               />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Role</Form.Label>
+              <Form.Control
+                name="role"
+                as="select"
+                value={form.role}
+                onChange={handleChange}
+                required
+              >
+                <option value="user">User</option>
+                <option value="admin">Admin</option>
+              </Form.Control>
             </Form.Group>
           </Modal.Body>
           <Modal.Footer>

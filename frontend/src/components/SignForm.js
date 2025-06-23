@@ -10,17 +10,17 @@ const styles = {
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    padding: "1rem 0", // lebih kecil
+    padding: "1rem 0",
   },
   container: {
     display: "flex",
     background: "#fff",
-    borderRadius: "0.8rem", // lebih kecil
-    boxShadow: "0 2px 16px rgba(0,0,0,0.08)", // lebih ringan
+    borderRadius: "0.8rem",
+    boxShadow: "0 2px 16px rgba(0,0,0,0.08)",
     overflow: "hidden",
     width: "100%",
-    maxWidth: 700, // lebih kecil
-    minHeight: 380, // lebih kecil
+    maxWidth: 700,
+    minHeight: 380,
     flexDirection: "row",
   },
   left: {
@@ -33,11 +33,11 @@ const styles = {
     flexDirection: "column",
     alignItems: "center",
     justifyContent: "center",
-    padding: "1.2rem 1rem", // lebih kecil
+    padding: "1.2rem 1rem",
     borderRight: "1px solid #e0e0e0",
   },
   logo: {
-    width: 48, // lebih kecil
+    width: 48,
     height: 48,
     marginBottom: "0.7rem",
     objectFit: "contain",
@@ -46,20 +46,20 @@ const styles = {
   leftTitle: {
     color: "var(--color-accent)",
     fontWeight: 800,
-    fontSize: "1.1rem", // lebih kecil
+    fontSize: "1.1rem",
     marginBottom: "0.4rem",
     textAlign: "center",
     textShadow: "-1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff",
   },
   leftDesc: {
     color: "#fff",
-    fontSize: "0.9rem", // lebih kecil
+    fontSize: "0.9rem",
     textAlign: "center",
     opacity: 0.9,
   },
   right: {
     flex: 1,
-    padding: "1.2rem 1rem", // lebih kecil
+    padding: "1.2rem 1rem",
     display: "flex",
     flexDirection: "column",
     justifyContent: "center",
@@ -67,13 +67,13 @@ const styles = {
   formTitle: {
     color: "var(--color-accent)",
     fontWeight: 700,
-    fontSize: "1.05rem", // lebih kecil
+    fontSize: "1.05rem",
     marginBottom: "0.7rem",
     textAlign: "center",
   },
   formSub: {
     color: "var(--color-primary)",
-    fontSize: "0.92rem", // lebih kecil
+    fontSize: "0.92rem",
     textAlign: "center",
     marginBottom: "1.1rem",
     opacity: 0.85,
@@ -133,21 +133,6 @@ const styles = {
     display: "flex",
     alignItems: "center",
   },
-  '@media (maxWidth: 768px)': {
-    container: {
-      flexDirection: "column",
-      minHeight: "unset",
-      maxWidth: 98 + "vw",
-    },
-    left: {
-      borderRight: "none",
-      borderBottom: "1px solid #e0e0e0",
-      padding: "1rem 0.7rem",
-    },
-    right: {
-      padding: "1rem 0.7rem",
-    },
-  },
 };
 
 const initialForm = {
@@ -197,7 +182,7 @@ const SignForm = () => {
     return "";
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     setSuccess("");
@@ -207,11 +192,34 @@ const SignForm = () => {
       return;
     }
     setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
+
+    try {
+      const response = await fetch("http://localhost:5000/api/users/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: form.name,
+          email: form.email,
+          password: form.password,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Terjadi kesalahan saat pendaftaran");
+      }
+
+      setSuccess("Pendaftaran berhasil!");
       setShowModal(true);
       setForm(initialForm);
-    }, 1200);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleGoToLogin = () => {
@@ -235,6 +243,7 @@ const SignForm = () => {
             Kelola logbook watchroom secara digital, cepat, dan aman.
           </div>
           {error && <Alert variant="danger">{error}</Alert>}
+          {success && <Alert variant="success">{success}</Alert>}
           <Form onSubmit={handleSubmit} autoComplete="off">
             <Form.Group>
               <Form.Label>Nama Lengkap</Form.Label>
@@ -328,8 +337,8 @@ const SignForm = () => {
               type="submit"
               style={styles.button}
               disabled={loading}
-              onMouseOver={e => e.currentTarget.style.background = "#E74C3C"}
-              onMouseOut={e => e.currentTarget.style.background = "var(--color-cta)"}
+              onMouseOver={(e) => (e.currentTarget.style.background = "#E74C3C")}
+              onMouseOut={(e) => (e.currentTarget.style.background = "var(--color-cta)")}
             >
               {loading ? "Memproses..." : "Daftar Sekarang"}
             </Button>

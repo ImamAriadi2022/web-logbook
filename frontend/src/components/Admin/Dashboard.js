@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Card, Row, Col, ListGroup } from "react-bootstrap";
 import { FaTachometerAlt, FaUser, FaClipboardList, FaFileAlt } from "react-icons/fa";
 
@@ -7,15 +7,34 @@ const dummyLogbook = [
   { id: 1, tanggal: "2025-01-04", jam: "10:29", user: "Siti", laporan: "Wildlife hazard di Runway 04" },
   { id: 2, tanggal: "2025-01-05", jam: "08:10", user: "Andi", laporan: "Pengecekan alat pemadam" },
 ];
-const dummyUsers = [
-  { id: 1, nama: "Siti" },
-  { id: 2, nama: "Andi" },
-  { id: 3, nama: "Budi" },
-];
 
 const Dashboard = () => {
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const response = await fetch("http://localhost:5000/api/users/users");
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.message || "Terjadi kesalahan saat mengambil data pengguna");
+        }
+
+        setUsers(data.users);
+      } catch (error) {
+        console.error("Error fetching users:", error.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUsers();
+  }, []);
+
   const totalLogbook = dummyLogbook.length;
-  const totalUser = dummyUsers.length;
+  const totalUser = users.length;
   const laporanTerakhir = dummyLogbook[0];
 
   return (
@@ -49,7 +68,7 @@ const Dashboard = () => {
           </Card>
         </Col>
       </Row>
-      <Card>
+      <Card className="mb-4">
         <Card.Header style={{ fontWeight: 600, background: "var(--color-accent)", color: "#fff" }}>
           Logbook Terbaru
         </Card.Header>
@@ -62,6 +81,27 @@ const Dashboard = () => {
               </div>
             </ListGroup.Item>
           ))}
+        </ListGroup>
+      </Card>
+      <Card>
+        <Card.Header style={{ fontWeight: 600, background: "var(--color-primary)", color: "#fff" }}>
+          Daftar Pengguna
+        </Card.Header>
+        <ListGroup variant="flush">
+          {loading ? (
+            <ListGroup.Item>Memuat data pengguna...</ListGroup.Item>
+          ) : users.length > 0 ? (
+            users.map((user) => (
+              <ListGroup.Item key={user.id}>
+                <div style={{ fontWeight: 600 }}>{user.name}</div>
+                <div style={{ fontSize: "0.97rem", color: "#888" }}>
+                  {user.email} &mdash; {user.role}
+                </div>
+              </ListGroup.Item>
+            ))
+          ) : (
+            <ListGroup.Item>Data pengguna tidak tersedia.</ListGroup.Item>
+          )}
         </ListGroup>
       </Card>
     </div>

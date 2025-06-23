@@ -1,6 +1,7 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { FaTachometerAlt, FaBook, FaPlusCircle, FaCalendarAlt, FaFileAlt, FaUserCog, FaSignOutAlt } from "react-icons/fa";
+import LogoutButton from "./Logout"; // Import LogoutButton
 
 const sidebarItems = [
   {
@@ -84,13 +85,6 @@ const styles = {
 const Sidebar = () => {
   const location = useLocation();
 
-  const handleLogout = () => {
-    // Hapus token/session di localStorage jika ada
-    localStorage.removeItem("token");
-    // Redirect ke halaman login
-    window.location.href = "/";
-  };
-
   return (
     <aside style={styles.sidebar}>
       {sidebarItems.map((item) => (
@@ -106,15 +100,7 @@ const Sidebar = () => {
           {item.label}
         </Link>
       ))}
-      <button
-        onClick={handleLogout}
-        style={styles.logout}
-      >
-        <span style={{ fontSize: "1.25rem", marginTop: "2px" }}>
-          <FaSignOutAlt />
-        </span>
-        Logout
-      </button>
+      <LogoutButton /> {/* Gunakan LogoutButton */}
     </aside>
   );
 };
