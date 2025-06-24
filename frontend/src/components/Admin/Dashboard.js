@@ -12,7 +12,7 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await fetch("http://localhost:5000/api/users/users");
+        const response = await fetch("https://web-logbook-bvjl.vercel.app/users/users");
         const data = await response.json();
 
         if (!response.ok) {
@@ -34,7 +34,7 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchLogbooks = async () => {
       try {
-        const response = await fetch("http://localhost:5000/api/logbooks");
+        const response = await fetch("https://web-logbook-bvjl.vercel.app/logbooks");
         const data = await response.json();
 
         if (!response.ok) {

@@ -12,7 +12,7 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchLogs = async () => {
       try {
-        const response = await fetch("https://apiale.cbraind.my.id/api/logbooks");
+        const response = await fetch("https://web-logbook-bvjl.vercel.app/logbooks");
         const data = await response.json();
 
         if (!response.ok) {

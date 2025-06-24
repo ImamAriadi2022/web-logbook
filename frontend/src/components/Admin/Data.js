@@ -18,7 +18,7 @@ const Data = () => {
   useEffect(() => {
     const fetchLogbooks = async () => {
       try {
-        const response = await fetch("http://localhost:5000/api/logbooks");
+        const response = await fetch("https://web-logbook-bvjl.vercel.app/logbooks");
         const data = await response.json();
 
         if (!response.ok) {
@@ -54,7 +54,7 @@ const Data = () => {
   const handleDelete = async (id) => {
     if (window.confirm("Yakin ingin menghapus logbook ini?")) {
       try {
-        const response = await fetch(`http://localhost:5000/api/logbooks/${id}`, {
+        const response = await fetch(`https://web-logbook-bvjl.vercel.app/logbooks/${id}`, {
           method: "DELETE",
         });
 
@@ -87,7 +87,7 @@ const Data = () => {
     setSuccess("");
 
     try {
-      const response = await fetch(`http://localhost:5000/api/logbooks/${editData.id}`, {
+      const response = await fetch(`https://web-logbook-bvjl.vercel.app/logbooks/${editData.id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

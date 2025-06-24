@@ -14,7 +14,7 @@ const Profil = () => {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const response = await fetch(`https://apiale.cbraind.my.id/api/users/${user_id}`);
+        const response = await fetch(`https://web-logbook-bvjl.vercel.app/users/${user_id}`);
         const data = await response.json();
 
         if (!response.ok) {
@@ -56,7 +56,7 @@ const Profil = () => {
     }
 
     try {
-      const response = await fetch(`https://apiale.cbraind.my.id/api/users/${user_id}`, {
+      const response = await fetch(`https://web-logbook-bvjl.vercel.app/users/${user_id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

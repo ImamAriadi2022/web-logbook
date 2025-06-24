@@ -113,7 +113,7 @@ const AddLogbook = () => {
     }
   
     try {
-      const response = await fetch("https://apiale.cbraind.my.id/api/logbooks/add", {
+      const response = await fetch("https://web-logbook-bvjl.vercel.app/logbooks/add", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
