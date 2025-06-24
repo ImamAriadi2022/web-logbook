@@ -28,7 +28,7 @@ const ReadLogbook = () => {
    useEffect(() => {
     const fetchLogs = async () => {
       try {
-        const response = await fetch(`http://localhost:5000/api/logbooks/user/${user_id}`);
+        const response = await fetch(`https://apiale.cbraind.my.id/api/logbooks/user/${user_id}`);
         const data = await response.json();
   
         console.log("Data logbooks:", data); // Tambahkan log ini
@@ -50,7 +50,7 @@ const ReadLogbook = () => {
   const handleDelete = async (id) => {
     if (window.confirm("Yakin ingin menghapus log ini?")) {
       try {
-        const response = await fetch(`http://localhost:5000/api/logbooks/${id}`, {
+        const response = await fetch(`https://apiale.cbraind.my.id/api/logbooks/${id}`, {
           method: "DELETE",
         });
 
@@ -129,7 +129,7 @@ const ReadLogbook = () => {
       // Log data yang akan dikirim ke backend
       console.log("Data yang dikirim ke backend:", completeData);
   
-      const response = await fetch(`http://localhost:5000/api/logbooks/${editData.id}`, {
+      const response = await fetch(`https://apiale.cbraind.my.id/api/logbooks/${editData.id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

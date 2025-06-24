@@ -41,6 +41,8 @@ app.get("/", (req, res) => {
         <li><strong>GET</strong> <code>/api/users/admin</code>: Menampilkan halaman tambah admin</li>
         <li><strong>GET</strong> <code>/api/users/users</code>: Mengambil semua pengguna</li>
         <li><strong>PUT</strong> <code>/api/users/users/:id</code>: Mengedit pengguna (hanya untuk admin)</li>
+        <li><strong>GET</strong> <code>/api/users/:id<code> mendapatkan user dari id</li>
+        <li><strong>PUT</strong> <code>/api/users/:id<code> mengedit user dari id</li>
     </ul>
 
     <p>Gunakan endpoint berikut untuk mennguji endpoint logbook:</p>

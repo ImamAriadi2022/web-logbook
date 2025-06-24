@@ -31,7 +31,7 @@ const LogoutButton = () => {
 
   const handleLogout = async () => {
     try {
-      const response = await fetch("http://localhost:5000/api/users/logout", {
+      const response = await fetch("https://apiale.cbraind.my.id/api/users/logout", {
         method: "POST",
       });
 
