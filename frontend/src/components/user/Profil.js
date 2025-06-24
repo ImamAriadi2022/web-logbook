@@ -1,26 +1,47 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Form, Button, Alert, Card } from "react-bootstrap";
 
-const initialUser = {
-  nama: "Budi Santoso",
-  email: "budi@logaoe.com",
-};
-
 const Profil = () => {
-  const [user, setUser] = useState(initialUser);
-  const [form, setForm] = useState({ nama: user.nama, password: "", confirm: "" });
+  const [user, setUser] = useState(null);
+  const [form, setForm] = useState({ nama: "", password: "", confirm: "" });
   const [success, setSuccess] = useState("");
   const [error, setError] = useState("");
+
+  // Ambil user_id dari localStorage
+  const user_id = localStorage.getItem("user_id");
+
+  // Fetch data pengguna dari backend
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const response = await fetch(`http://localhost:5000/api/users/${user_id}`);
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.message || "Terjadi kesalahan saat mengambil data pengguna");
+        }
+
+        setUser(data.user);
+        setForm({ nama: data.user.name, password: "", confirm: "" });
+      } catch (error) {
+        console.error("Error fetching user:", error.message);
+        setError("Gagal mengambil data pengguna.");
+      }
+    };
+
+    fetchUser();
+  }, [user_id]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     setSuccess("");
+
     if (!form.nama) {
       setError("Nama tidak boleh kosong.");
       return;
@@ -33,10 +54,37 @@ const Profil = () => {
       setError("Konfirmasi password tidak cocok.");
       return;
     }
-    setUser((prev) => ({ ...prev, nama: form.nama }));
-    setSuccess("Profil berhasil diperbarui.");
-    setForm((prev) => ({ ...prev, password: "", confirm: "" }));
+
+    try {
+      const response = await fetch(`http://localhost:5000/api/users/${user_id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: form.nama,
+          password: form.password || undefined, // Kirim password hanya jika diisi
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Terjadi kesalahan saat memperbarui profil");
+      }
+
+      setUser((prev) => ({ ...prev, name: form.nama }));
+      setSuccess("Profil berhasil diperbarui.");
+      setForm((prev) => ({ ...prev, password: "", confirm: "" }));
+    } catch (error) {
+      console.error("Error updating profile:", error.message);
+      setError("Gagal memperbarui profil.");
+    }
   };
+
+  if (!user) {
+    return <div>Memuat data pengguna...</div>;
+  }
 
   return (
     <div style={{ maxWidth: 420, margin: "2rem auto" }}>

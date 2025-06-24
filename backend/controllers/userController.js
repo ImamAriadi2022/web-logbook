@@ -151,4 +151,40 @@ const editUser = (req, res) => {
   });
 };
 
-module.exports = { registerUser, loginUser, logoutUser, addAdmin, getAllUsers, editUser };
+const getUserById = (req, res) => {
+  const userId = req.params.id;
+
+  db.query("SELECT id, name, email FROM users WHERE id = ?", [userId], (err, results) => {
+    if (err) {
+      return res.status(500).json({ message: "Terjadi kesalahan pada server." });
+    }
+    if (results.length === 0) {
+      return res.status(404).json({ message: "Pengguna tidak ditemukan." });
+    }
+    res.json({ user: results[0] });
+  });
+};
+
+const updateUser = (req, res) => {
+  const userId = req.params.id;
+  const { name, password } = req.body;
+
+  if (!name) {
+    return res.status(400).json({ message: "Nama tidak boleh kosong." });
+  }
+
+  const updateQuery = password
+    ? "UPDATE users SET name = ?, password = ? WHERE id = ?"
+    : "UPDATE users SET name = ? WHERE id = ?";
+
+  const params = password ? [name, password, userId] : [name, userId];
+
+  db.query(updateQuery, params, (err) => {
+    if (err) {
+      return res.status(500).json({ message: "Terjadi kesalahan pada server." });
+    }
+    res.json({ message: "Profil berhasil diperbarui." });
+  });
+};
+
+module.exports = { getUserById, updateUser, registerUser, loginUser, logoutUser, addAdmin, getAllUsers, editUser };

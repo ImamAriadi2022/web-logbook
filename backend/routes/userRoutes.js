@@ -1,6 +1,6 @@
 const express = require("express");
 const path = require("path");
-const { registerUser, loginUser, logoutUser, addAdmin, getAllUsers, editUser } = require("../controllers/userController");
+const { updateUser, getUserById, registerUser, loginUser, logoutUser, addAdmin, getAllUsers, editUser } = require("../controllers/userController");
 
 const router = express.Router();
 
@@ -21,5 +21,9 @@ router.get("/users", getAllUsers);
 
 // Route untuk mengedit pengguna
 router.put("/users/:id", editUser);
+
+router.get("/:id", getUserById);
+
+router.put("/:id", updateUser);
 
 module.exports = router;

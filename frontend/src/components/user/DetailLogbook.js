@@ -1,138 +1,78 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Table, Button, InputGroup, Form } from "react-bootstrap";
-
-// Dummy data logbook (bisa diganti dengan props/ambil dari backend)
-export const initialLogs = [
-  {
-    id: 1,
-    tanggal: "2025-01-04",
-    hari: "Kamis",
-    jam: "10:29 AM s.d 22:00 PM",
-    petugas: ["Siti", "Budi"],
-    koja: "Maizar",
-    regu: "Alpha",
-    flights: [
-      {
-        time: "10:22",
-        operator: "Lion Air",
-        type: "B-737",
-        flight: "JT-988",
-        from: "PKW",
-        to: "BTH",
-        rw: "22",
-      },
-      {
-        time: "10:30",
-        operator: "Lion Air",
-        type: "B-737",
-        flight: "JT-988",
-        from: "CGK",
-        to: "BTH",
-        rw: "22",
-      },
-    ],
-    report: {
-      tanggalKejadian: "Sabtu, 04 Januari 2025",
-      waktuKejadian: "10:29AM",
-      cuaca: "Cerah",
-      kejadian: "Wildlife hazard di Runway 04",
-      noPnb: "-",
-      tipePesawat: "-",
-      fasePenerbangan: "-",
-      kerusakanPesawat: "-",
-      jenisFasilitas: "-",
-      kerusakanFasilitas: "-",
-      rincianKejadian:
-        "Pada pukul sekitar 10:35 WIB tower menginformasikan ke commando kalau terdapat segerombolan burung Elang di Runway 04. Kemudian pukul 10.40 Commando dan personil menuju lokasi untuk mengusir burung. Ditemukan 1 ekor burung dan berhasil diamankan. Pukul 10.45 commando kembali ke firestation.",
-    },
-  },
-  {
-    id: 2,
-    tanggal: "2025-01-05",
-    hari: "Jumat",
-    jam: "08:00 AM s.d 20:00 PM",
-    petugas: ["Andi", "Rina"],
-    koja: "Dewi",
-    regu: "Bravo",
-    flights: [
-      {
-        time: "08:10",
-        operator: "Garuda",
-        type: "A-320",
-        flight: "GA-123",
-        from: "CGK",
-        to: "BTH",
-        rw: "04",
-      },
-    ],
-    report: {
-      tanggalKejadian: "Jumat, 05 Januari 2025",
-      waktuKejadian: "08:15AM",
-      cuaca: "Hujan",
-      kejadian: "Pengecekan alat pemadam",
-      noPnb: "-",
-      tipePesawat: "-",
-      fasePenerbangan: "-",
-      kerusakanPesawat: "-",
-      jenisFasilitas: "-",
-      kerusakanFasilitas: "-",
-      rincianKejadian: "Pengecekan alat pemadam di area apron, semua alat dalam kondisi baik.",
-    },
-  },
-];
-
 
 const tableStyle = {
   width: "100%",
-  fontSize: "12px",
   borderCollapse: "collapse",
-  border: "1px solid black",
-};
-
-const tableStyle1 = {
-  width: "100%",
-  fontSize: "12px",
-  borderCollapse: "collapse",
-  border: "none",
+  marginBottom: "20px",
 };
 
 const tdStyle = {
-  border: "1px solid black",
-  padding: "4px",
-};
-const tdStyle1 = {
-  border: "none",
-  padding: "4px",
+  border: "1px solid #ddd",
+  padding: "8px",
+  textAlign: "left",
 };
 
 const centeredHeader = {
   textAlign: "center",
-  margin: "20px 0 5px",
-  fontSize: "14px",
   fontWeight: "bold",
+  marginBottom: "10px",
 };
 
 const sectionTitle = {
-  margin: "20px 0 5px",
-  fontSize: "13px",
   fontWeight: "bold",
+  marginTop: "20px",
+  marginBottom: "10px",
+};
+
+const tableStyle1 = {
+  width: "100%",
+  borderCollapse: "collapse",
+  marginBottom: "20px",
+};
+
+const tdStyle1 = {
+  border: "1px solid #ddd",
+  padding: "8px",
+  textAlign: "left",
 };
 
 const DetailLogbook = () => {
-  const [logs] = useState(initialLogs);
+  const [logs, setLogs] = useState([]);
   const [selectedLog, setSelectedLog] = useState(null);
   const [filter, setFilter] = useState("");
   const detailRef = useRef();
 
+  // Ambil user_id dari localStorage
+  const user_id = localStorage.getItem("user_id");
+
+  // Fetch data logbook dari backend
+  useEffect(() => {
+    const fetchLogs = async () => {
+      try {
+        const response = await fetch(`http://localhost:5000/api/logbooks/user/${user_id}`);
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.message || "Terjadi kesalahan saat mengambil logbook");
+        }
+
+        setLogs(data.logbooks);
+      } catch (error) {
+        console.error("Error fetching logbooks:", error.message);
+      }
+    };
+
+    fetchLogs();
+  }, [user_id]);
+
   const filteredLogs = logs.filter(
     (log) =>
-      log.hari.toLowerCase().includes(filter.toLowerCase()) ||
-      log.tanggal.toLowerCase().includes(filter.toLowerCase()) ||
-      log.petugas.some((p) => p.toLowerCase().includes(filter.toLowerCase())) ||
-      log.report.kejadian.toLowerCase().includes(filter.toLowerCase())
+      log.hari?.toLowerCase().includes(filter.toLowerCase()) ||
+      log.tanggal?.toLowerCase().includes(filter.toLowerCase()) ||
+      log.petugas?.some((p) => p?.toLowerCase().includes(filter.toLowerCase())) ||
+      (log.report && log.report.kejadian?.toLowerCase().includes(filter.toLowerCase()))
   );
-
-  // Print hanya bagian detail logbook
   const handlePrint = () => {
     const printContents = detailRef.current.innerHTML;
     const originalContents = document.body.innerHTML;
@@ -180,12 +120,12 @@ const DetailLogbook = () => {
                     <td>{log.hari}</td>
                     <td>
                       <ul style={{ margin: 0, padding: 0, listStyle: "none" }}>
-                        {log.petugas.map((p, i) => (
+                        {log.petugas?.map((p, i) => (
                           <li key={i}>{p}</li>
                         ))}
                       </ul>
                     </td>
-                    <td>{log.report.kejadian}</td>
+                    <td>{log.report?.kejadian || "Tidak ada kejadian"}</td>
                     <td>
                       <Button
                         size="sm"
@@ -281,26 +221,26 @@ const DetailLogbook = () => {
             </table>
 
             <h4 style={{ textAlign: "center", margin: "20px 0 5px" }}>LAPORAN/REPORT</h4>
-
+            
             {/* TABEL INFORMASI UMUM */}
             <h5 style={sectionTitle}>Informasi Umum / General Information</h5>
             <table style={tableStyle1}>
               <tbody>
                 <tr>
                   <td style={tdStyle1}>Tanggal Kejadian</td>
-                  <td style={tdStyle1}>{selectedLog.report.tanggalKejadian}</td>
+                  <td style={tdStyle1}>{selectedLog.report?.tanggalKejadian || "Tidak tersedia"}</td>
                 </tr>
                 <tr>
                   <td style={tdStyle1}>Waktu Kejadian</td>
-                  <td style={tdStyle1}>{selectedLog.report.waktuKejadian}</td>
+                  <td style={tdStyle1}>{selectedLog.report?.waktuKejadian || "Tidak tersedia"}</td>
                 </tr>
                 <tr>
                   <td style={tdStyle1}>Cuaca</td>
-                  <td style={tdStyle1}>{selectedLog.report.cuaca}</td>
+                  <td style={tdStyle1}>{selectedLog.report?.cuaca || "Tidak tersedia"}</td>
                 </tr>
                 <tr>
                   <td style={tdStyle1}>Kejadian</td>
-                  <td style={tdStyle1}>{selectedLog.report.kejadian}</td>
+                  <td style={tdStyle1}>{selectedLog.report?.kejadian || "Tidak tersedia"}</td>
                 </tr>
               </tbody>
             </table>
@@ -310,19 +250,19 @@ const DetailLogbook = () => {
               <tbody>
                 <tr>
                   <td style={tdStyle1}>No.PNB</td>
-                  <td style={tdStyle1}>{selectedLog.report.noPnb}</td>
+                  <td style={tdStyle1}>{selectedLog.report?.noPnb || "Tidak tersedia"}</td>
                 </tr>
                 <tr>
                   <td style={tdStyle1}>Tipe Pesawat</td>
-                  <td style={tdStyle1}>{selectedLog.report.tipePesawat}</td>
+                  <td style={tdStyle1}>{selectedLog.report?.tipePesawat || "Tidak tersedia"}</td>
                 </tr>
                 <tr>
                   <td style={tdStyle1}>Fase Penerbangan</td>
-                  <td style={tdStyle1}>{selectedLog.report.fasePenerbangan}</td>
+                  <td style={tdStyle1}>{selectedLog.report?.fasePenerbangan || "Tidak tersedia"}</td>
                 </tr>
                 <tr>
                   <td style={tdStyle1}>Kerusakan Pesawat Udara</td>
-                  <td style={tdStyle1}>{selectedLog.report.kerusakanPesawat}</td>
+                  <td style={tdStyle1}>{selectedLog.report?.kerusakanPesawat || "Tidak tersedia"}</td>
                 </tr>
               </tbody>
             </table>
@@ -332,15 +272,15 @@ const DetailLogbook = () => {
               <tbody>
                 <tr>
                   <td style={tdStyle1}>Jenis Fasilitas</td>
-                  <td style={tdStyle1}>{selectedLog.report.jenisFasilitas}</td>
+                  <td style={tdStyle1}>{selectedLog.report?.jenisFasilitas || "Tidak tersedia"}</td>
                 </tr>
                 <tr>
                   <td style={tdStyle1}>Kerusakan Fasilitas</td>
-                  <td style={tdStyle1}>{selectedLog.report.kerusakanFasilitas}</td>
+                  <td style={tdStyle1}>{selectedLog.report?.kerusakanFasilitas || "Tidak tersedia"}</td>
                 </tr>
                 <tr>
                   <td style={tdStyle1}>Rincian Kejadian</td>
-                  <td style={tdStyle1}>{selectedLog.report.rincianKejadian}</td>
+                  <td style={tdStyle1}>{selectedLog.report?.rincianKejadian || "Tidak tersedia"}</td>
                 </tr>
               </tbody>
             </table>
