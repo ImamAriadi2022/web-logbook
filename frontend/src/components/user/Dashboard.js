@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from "react";
-import { Card, Row, Col, Button, ListGroup } from "react-bootstrap";
-import { FaBook, FaCalendarAlt, FaPlusCircle } from "react-icons/fa";
+import { useEffect, useState } from "react";
+import { Button, Card, Col, ListGroup, Row } from "react-bootstrap";
+import { FaBook, FaPlusCircle } from "react-icons/fa";
 import { Link } from "react-router-dom";
 
 const Dashboard = () => {
@@ -8,6 +8,70 @@ const Dashboard = () => {
   const [summary, setSummary] = useState({ totalLog: 0, totalShift: 0, totalPetugas: 0 });
   const [aktivitasTerbaru, setAktivitasTerbaru] = useState([]);
   const [error, setError] = useState("");
+
+  // Helper function untuk format tanggal ke format Indonesia
+  const formatDateForDisplay = (dateString) => {
+    if (!dateString || dateString === "Tidak tersedia") return "Tidak tersedia";
+    
+    try {
+      let date;
+      
+      if (dateString.includes('T')) {
+        date = new Date(dateString);
+      } else if (dateString.includes('-')) {
+        const parts = dateString.split('-');
+        if (parts[0].length === 4) {
+          date = new Date(dateString);
+        } else {
+          date = new Date(`${parts[2]}-${parts[1]}-${parts[0]}`);
+        }
+      } else {
+        date = new Date(dateString);
+      }
+
+      if (isNaN(date.getTime())) {
+        return dateString;
+      }
+
+      const months = [
+        "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+        "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+      ];
+
+      const day = date.getDate().toString().padStart(2, '0');
+      const month = months[date.getMonth()];
+      const year = date.getFullYear();
+
+      return `${day} ${month} ${year}`;
+    } catch (error) {
+      return dateString;
+    }
+  };
+
+  // Helper function untuk format waktu
+  const formatTimeForDisplay = (timeString) => {
+    if (!timeString || timeString === "Tidak tersedia") return "Tidak tersedia";
+    
+    try {
+      if (timeString.includes('T')) {
+        const date = new Date(timeString);
+        if (isNaN(date.getTime())) return timeString;
+        
+        const hours = date.getHours().toString().padStart(2, '0');
+        const minutes = date.getMinutes().toString().padStart(2, '0');
+        return `${hours}:${minutes}`;
+      } else if (timeString.includes(':')) {
+        const timeParts = timeString.split(':');
+        if (timeParts.length >= 2) {
+          return `${timeParts[0].padStart(2, '0')}:${timeParts[1].padStart(2, '0')}`;
+        }
+      }
+      
+      return timeString;
+    } catch (error) {
+      return timeString;
+    }
+  };
 
   useEffect(() => {
     const fetchLogs = async () => {
@@ -19,12 +83,33 @@ const Dashboard = () => {
           throw new Error(data.message || "Terjadi kesalahan saat mengambil logbook");
         }
 
-        setLogs(data.logbooks);
+        // Parse JSON fields dan format data
+        const formattedLogs = data.logbooks.map((log) => {
+          const parseIfNeeded = (value) => {
+            if (typeof value === 'string' && (value.startsWith('[') || value.startsWith('{'))) {
+              try {
+                return JSON.parse(value);
+              } catch (e) {
+                return value;
+              }
+            }
+            return value;
+          };
+
+          return {
+            ...log,
+            petugas: Array.isArray(log.petugas) ? log.petugas : JSON.parse(log.petugas || "[]"),
+          };
+        });
+
+        setLogs(formattedLogs);
 
         // Hitung ringkasan data
-        const totalLog = data.logbooks.length;
-        const shiftSet = new Set(data.logbooks.map((log) => log.jam));
-        const petugasSet = new Set(data.logbooks.flatMap((log) => log.petugas));
+        const totalLog = formattedLogs.length;
+        const shiftSet = new Set(formattedLogs.map((log) => formatTimeForDisplay(log.jam)));
+        const petugasSet = new Set(formattedLogs.flatMap((log) => 
+          Array.isArray(log.petugas) ? log.petugas : []
+        ));
         setSummary({
           totalLog,
           totalShift: shiftSet.size,
@@ -32,14 +117,14 @@ const Dashboard = () => {
         });
 
         // Ambil aktivitas terbaru
-        const aktivitas = data.logbooks
+        const aktivitas = formattedLogs
           .map((log) => ({
             id: log.id,
-            waktu: `${log.tanggal} ${log.jam.split(" ")[0]}`,
-            aktivitas: log.report?.kejadian || "Tidak ada kejadian",
-            petugas: Array.isArray(log.petugas) ? log.petugas.join(", ") : log.petugas || "Tidak ada petugas",
+            waktu: `${formatDateForDisplay(log.tanggal)} ${formatTimeForDisplay(log.jam)}`,
+            aktivitas: log.laporan || log.report?.kejadian || "Tidak ada kejadian",
+            petugas: Array.isArray(log.petugas) ? log.petugas.join(", ") : "Tidak ada petugas",
           }))
-          .sort((a, b) => (a.waktu < b.waktu ? 1 : -1))
+          .sort((a, b) => new Date(b.tanggal) - new Date(a.tanggal))
           .slice(0, 5);
 
         setAktivitasTerbaru(aktivitas);

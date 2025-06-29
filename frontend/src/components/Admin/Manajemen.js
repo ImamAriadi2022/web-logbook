@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from "react";
-import { Card, Table, Button, Modal, Form } from "react-bootstrap";
-import { FaUser, FaEdit, FaTrash } from "react-icons/fa";
+import { useEffect, useState } from "react";
+import { Alert, Button, Card, Form, Modal, Table } from "react-bootstrap";
+import { FaEdit, FaTrash, FaUser } from "react-icons/fa";
 
 const Manajemen = () => {
   const [users, setUsers] = useState([]);
@@ -8,6 +8,8 @@ const Manajemen = () => {
   const [showModal, setShowModal] = useState(false);
   const [editUser, setEditUser] = useState(null);
   const [form, setForm] = useState({ name: "", email: "", role: "" });
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -22,6 +24,7 @@ const Manajemen = () => {
         setUsers(data.users);
       } catch (error) {
         console.error("Error fetching users:", error.message);
+        setError("Gagal memuat data pengguna: " + error.message);
       } finally {
         setLoading(false);
       }
@@ -39,6 +42,8 @@ const Manajemen = () => {
   const handleCloseModal = () => {
     setShowModal(false);
     setEditUser(null);
+    setError("");
+    setSuccess("");
   };
 
   const handleChange = (e) => {
@@ -47,6 +52,9 @@ const Manajemen = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
+    setSuccess("");
+    
     try {
       const method = editUser ? "PUT" : "POST";
       const endpoint = editUser
@@ -68,31 +76,47 @@ const Manajemen = () => {
       }
 
       if (editUser) {
-        setUsers(users.map((u) => (u.id === editUser.id ? { ...form, id: editUser.id } : u)));
+        // Update existing user - preserve all existing data and merge with form data
+        setUsers(users.map((u) => (u.id === editUser.id ? { ...u, ...form } : u)));
+        setSuccess("Data pengguna berhasil diperbarui!");
       } else {
-        setUsers([...users, { ...form, id: data.user.id }]);
+        // Add new user
+        const newUser = { ...form, id: data.user?.id || Date.now() };
+        setUsers([...users, newUser]);
+        setSuccess("Pengguna baru berhasil ditambahkan!");
       }
 
-      handleCloseModal();
+      setTimeout(() => {
+        handleCloseModal();
+      }, 1500);
     } catch (error) {
       console.error("Error saving user:", error.message);
+      setError("Gagal menyimpan data: " + error.message);
     }
   };
 
   const handleDelete = async (id) => {
     if (window.confirm("Yakin ingin menghapus user ini?")) {
       try {
-        const response = await fetch(`https://web-logbook-bvjl.vercel.app/users/${id}`, {
+        const response = await fetch(`https://web-logbook-bvjl.vercel.app/users/users/${id}`, {
           method: "DELETE",
         });
 
         if (!response.ok) {
-          throw new Error("Terjadi kesalahan saat menghapus pengguna");
+          const data = await response.json();
+          throw new Error(data.message || "Terjadi kesalahan saat menghapus pengguna");
         }
 
         setUsers(users.filter((u) => u.id !== id));
+        setSuccess("Pengguna berhasil dihapus!");
+        
+        // Auto hide success message
+        setTimeout(() => {
+          setSuccess("");
+        }, 3000);
       } catch (error) {
         console.error("Error deleting user:", error.message);
+        setError("Gagal menghapus pengguna: " + error.message);
       }
     }
   };
@@ -102,6 +126,10 @@ const Manajemen = () => {
       <h2 style={{ fontWeight: 700, color: "var(--color-accent)", marginBottom: "1.5rem", display: "flex", alignItems: "center", gap: 12 }}>
         <FaUser style={{ fontSize: 28 }} /> Manajemen Pengguna
       </h2>
+      
+      {error && <Alert variant="danger" onClose={() => setError("")} dismissible>{error}</Alert>}
+      {success && <Alert variant="success" onClose={() => setSuccess("")} dismissible>{success}</Alert>}
+      
       <Card>
         <Card.Header style={{ fontWeight: 600, background: "var(--color-accent)", color: "#fff", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           Kelola Akun Personel PKP-PK
@@ -156,6 +184,9 @@ const Manajemen = () => {
         </Modal.Header>
         <Form onSubmit={handleSubmit}>
           <Modal.Body>
+            {error && <Alert variant="danger">{error}</Alert>}
+            {success && <Alert variant="success">{success}</Alert>}
+            
             <Form.Group className="mb-3">
               <Form.Label>Nama</Form.Label>
               <Form.Control
@@ -179,16 +210,16 @@ const Manajemen = () => {
             </Form.Group>
             <Form.Group className="mb-3">
               <Form.Label>Role</Form.Label>
-              <Form.Control
+              <Form.Select
                 name="role"
-                as="select"
                 value={form.role}
                 onChange={handleChange}
                 required
               >
+                <option value="">Pilih Role</option>
                 <option value="user">User</option>
                 <option value="admin">Admin</option>
-              </Form.Control>
+              </Form.Select>
             </Form.Group>
           </Modal.Body>
           <Modal.Footer>

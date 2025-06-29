@@ -6,11 +6,13 @@ const {
   editLogbook,
   deleteLogbook,
   getLogbooksByUserId,
+  addFlights,
+  getFlightsByLogbookId,
 } = require("../models/loogBookModel");
 
 // Controller untuk menambahkan logbook baru
 const createLogbook = (req, res) => {
-  const { user_id, watchroom, report } = req.body; // Gunakan user_id
+  const { user_id, watchroom, report } = req.body;
 
   console.log("Data diterima:", { user_id, watchroom, report }); // Log data yang diterima
 
@@ -18,12 +20,55 @@ const createLogbook = (req, res) => {
     return res.status(400).json({ message: "Semua field wajib diisi" });
   }
 
-  addLogbook(user_id, watchroom, report, (err, results) => {
+  // Format data sebelum disimpan
+  const formattedWatchroom = {
+    ...watchroom,
+    tanggal: new Date(watchroom.tanggal).toISOString().split("T")[0], // Format DATE
+    jam: watchroom.jam || "00:00:00", // Default jika kosong
+    petugas: JSON.stringify(watchroom.petugas), // Konversi ke JSON
+  };
+
+  const formattedReport = {
+    ...report,
+    tanggalKejadian: report.tanggalKejadian
+      ? new Date(report.tanggalKejadian).toISOString().split("T")[0]
+      : null, // Format DATE
+    waktuKejadian: report.waktuKejadian || "00:00:00", // Default jika kosong
+  };
+
+  addLogbook(user_id, formattedWatchroom, formattedReport, (err, results) => {
     if (err) {
       console.error("Error saat menambahkan logbook:", err); // Log error
       return res.status(500).json({ message: "Terjadi kesalahan server", error: err.message });
     }
-    res.status(201).json({ message: "Logbook berhasil ditambahkan", logbookId: results.insertId });
+
+    const logbookId = results.insertId;
+
+    // Simpan data flights ke tabel flights jika ada
+    if (watchroom.flights && watchroom.flights.length > 0) {
+      const flightsData = watchroom.flights.map((flight) => ({
+        logbook_id: logbookId,
+        time: flight.time,
+        operator: flight.operator,
+        aircraftType: flight.aircraftType,
+        flightNumber: flight.flightNumber,
+        depArrFrom: flight.depArrFrom,
+        to: flight.to,
+        rwUse: flight.rwUse,
+        remarks: flight.remarks,
+      }));
+
+      addFlights(flightsData, (err) => {
+        if (err) {
+          console.error("Error saat menambahkan flights:", err); // Log error
+          return res.status(500).json({ message: "Terjadi kesalahan server", error: err.message });
+        }
+
+        res.status(201).json({ message: "Logbook dan flights berhasil ditambahkan", logbookId });
+      });
+    } else {
+      res.status(201).json({ message: "Logbook berhasil ditambahkan", logbookId });
+    }
   });
 };
 
@@ -41,33 +86,22 @@ const fetchAllLogbooks = (req, res) => {
 const fetchLogbookById = (req, res) => {
   const { id } = req.params;
 
-  getLogbookById(id, (err, results) => {
+  getLogbookById(id, (err, logbook) => {
     if (err) {
       return res.status(500).json({ message: "Terjadi kesalahan server", error: err.message });
     }
 
-    if (results.length === 0) {
+    if (!logbook) {
       return res.status(404).json({ message: "Logbook tidak ditemukan" });
     }
 
-    res.status(200).json({ logbook: results[0] });
-  });
-};
+    getFlightsByLogbookId(id, (err, flights) => {
+      if (err) {
+        return res.status(500).json({ message: "Terjadi kesalahan server", error: err.message });
+      }
 
-// Controller untuk mengambil logbook berdasarkan user_id
-const fetchLogbooksByUserId = (req, res) => {
-  const { user_id } = req.params;
-
-  getLogbooksByUserId(user_id, (err, results) => {
-    if (err) {
-      return res.status(500).json({ message: "Terjadi kesalahan server", error: err.message });
-    }
-
-    if (results.length === 0) {
-      return res.status(404).json({ message: "Logbook tidak ditemukan untuk user ini" });
-    }
-
-    res.status(200).json({ logbooks: results });
+      res.status(200).json({ logbook, flights });
+    });
   });
 };
 
@@ -76,20 +110,68 @@ const updateLogbook = (req, res) => {
   const { id } = req.params;
   const { watchroom, report } = req.body;
 
+  console.log("Data yang diterima untuk update:", { id, watchroom, report });
+
   if (!watchroom || !report) {
-    return res.status(400).json({ message: "Semua field wajib diisi" });
+    return res.status(400).json({ message: "Data watchroom dan report wajib diisi." });
   }
 
-  editLogbook(id, watchroom, report, (err, results) => {
+  // Ambil data logbook yang sudah ada dari database
+  getLogbookById(id, (err, originalLogbook) => {
     if (err) {
+      console.error("Error saat mengambil logbook:", err.message);
       return res.status(500).json({ message: "Terjadi kesalahan server", error: err.message });
     }
 
-    if (results.affectedRows === 0) {
+    if (!originalLogbook) {
       return res.status(404).json({ message: "Logbook tidak ditemukan" });
     }
 
-    res.status(200).json({ message: "Logbook berhasil diperbarui" });
+    try {
+      // Gunakan data yang sudah ada jika data baru kosong
+      const updatedData = {
+        hari: watchroom.hari || originalLogbook.hari || "-",
+        tanggal: watchroom.tanggal || originalLogbook.tanggal || new Date().toISOString().split('T')[0],
+        jam: watchroom.jam || originalLogbook.jam || "00:00:00",
+        petugas: Array.isArray(watchroom.petugas) ? JSON.stringify(watchroom.petugas) : 
+                 watchroom.petugas || originalLogbook.petugas || "[]",
+        flights: Array.isArray(watchroom.flights) ? JSON.stringify(watchroom.flights) : 
+                 watchroom.flights || originalLogbook.flights || "[]",
+        koja: watchroom.koja || originalLogbook.koja || "-",
+        regu: watchroom.regu || originalLogbook.regu || "-",
+        hariKejadian: report.hariKejadian || originalLogbook.hariKejadian || "-",
+        tanggalKejadian: report.tanggalKejadian || originalLogbook.tanggalKejadian || new Date().toISOString().split('T')[0],
+        waktuKejadian: report.waktuKejadian || originalLogbook.waktuKejadian || "00:00:00",
+        cuaca: report.cuaca || originalLogbook.cuaca || "-",
+        kejadian: report.kejadian || originalLogbook.kejadian || "-",
+        noPnb: report.noPnb || originalLogbook.noPnb || null,
+        tipePesawat: report.tipePesawat || originalLogbook.tipePesawat || null,
+        fasePenerbangan: report.fasePenerbangan || originalLogbook.fasePenerbangan || null,
+        kerusakanPesawat: report.kerusakanPesawat || originalLogbook.kerusakanPesawat || null,
+        jenisFasilitas: report.jenisFasilitas || originalLogbook.jenisFasilitas || null,
+        kerusakanFasilitas: report.kerusakanFasilitas || originalLogbook.kerusakanFasilitas || null,
+        rincianKejadian: report.rincianKejadian || originalLogbook.rincianKejadian || null,
+      };
+
+      console.log("Data yang akan diupdate:", updatedData);
+
+      // Update logbook dengan data yang sudah diperbarui
+      editLogbook(id, updatedData, (err, results) => {
+        if (err) {
+          console.error("Error saat mengupdate logbook:", err.message);
+          return res.status(500).json({ message: "Terjadi kesalahan server", error: err.message });
+        }
+
+        if (results.affectedRows === 0) {
+          return res.status(404).json({ message: "Logbook tidak ditemukan" });
+        }
+
+        res.status(200).json({ message: "Logbook berhasil diperbarui" });
+      });
+    } catch (error) {
+      console.error("Error parsing data:", error.message);
+      res.status(400).json({ message: "Data tidak valid", error: error.message });
+    }
   });
 };
 
@@ -107,6 +189,25 @@ const removeLogbook = (req, res) => {
     }
 
     res.status(200).json({ message: "Logbook berhasil dihapus" });
+  });
+};
+
+const fetchLogbooksByUserId = (req, res) => {
+  const { user_id } = req.params;
+
+  getLogbooksByUserId(user_id, (err, results) => {
+    if (err) {
+      console.error("Error fetching logbooks:", err.message);
+      return res.status(500).json({ message: "Terjadi kesalahan saat mengambil logbook" });
+    }
+
+    if (!results || results.length === 0) {
+      return res.status(404).json({ message: "Logbook tidak ditemukan untuk user ini" });
+    }
+
+    console.log("Raw logbook data from database:", JSON.stringify(results[0], null, 2));
+    
+    res.status(200).json({ logbooks: results });
   });
 };
 

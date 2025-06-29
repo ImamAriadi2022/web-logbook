@@ -103,15 +103,15 @@ const AddLogbook = () => {
     e.preventDefault();
     setError("");
     setSuccess("");
-  
+
     // Ambil user_id dari local storage
     const user_id = localStorage.getItem("user_id");
-  
+
     if (!user_id) {
       setError("User ID tidak ditemukan. Silakan login ulang.");
       return;
     }
-  
+
     try {
       const response = await fetch("https://web-logbook-bvjl.vercel.app/logbooks/add", {
         method: "POST",
@@ -120,13 +120,13 @@ const AddLogbook = () => {
         },
         body: JSON.stringify({ user_id, watchroom, report }),
       });
-  
+
       const data = await response.json();
-  
+
       if (!response.ok) {
         throw new Error(data.message || "Terjadi kesalahan saat menyimpan logbook");
       }
-  
+
       setSuccess("Logbook dan laporan berhasil disimpan!");
       setWatchroom(initialWatchroom);
       setReport(initialReport);
@@ -147,6 +147,7 @@ const AddLogbook = () => {
       {error && <Alert variant="danger">{error}</Alert>}
       {success && <Alert variant="success">{success}</Alert>}
       <Form onSubmit={handleSubmit}>
+        {/* Form untuk Watch Room */}
         <Row>
           <Col md={4}>
             <Form.Group className="mb-3">
@@ -186,6 +187,7 @@ const AddLogbook = () => {
             </Form.Group>
           </Col>
         </Row>
+        {/* Form untuk Petugas */}
         <Form.Group className="mb-3">
           <Form.Label>Petugas Watch Room</Form.Label>
           {watchroom.petugas.map((p, idx) => (
@@ -208,34 +210,9 @@ const AddLogbook = () => {
             + Tambah Petugas
           </Button>
         </Form.Group>
-        <Row>
-          <Col md={6}>
-            <Form.Group className="mb-3">
-              <Form.Label>Koja</Form.Label>
-              <Form.Control
-                type="text"
-                name="koja"
-                value={watchroom.koja}
-                onChange={handleWatchroomChange}
-                required
-              />
-            </Form.Group>
-          </Col>
-          <Col md={6}>
-            <Form.Group className="mb-3">
-              <Form.Label>Regu Jaga</Form.Label>
-              <Form.Control
-                type="text"
-                name="regu"
-                value={watchroom.regu}
-                onChange={handleWatchroomChange}
-                required
-              />
-            </Form.Group>
-          </Col>
-        </Row>
+        {/* Form untuk Flights */}
         <hr style={{ margin: "2.5rem 0 1.5rem 0", borderTop: "2px dashed var(--color-accent, #023E8A)" }} />
-        <h5 style={{ marginTop: 20, marginBottom: 10 }}>Aircraft Movement</h5>
+        <h5 style={{ marginTop: 20, marginBottom: 10 }}>Aircraft Movement</h5>
         {watchroom.flights.map((flight, idx) => (
           <div key={idx} style={{ border: "1px solid #eee", borderRadius: 8, padding: 12, marginBottom: 12 }}>
             <Row>
@@ -352,7 +329,7 @@ const AddLogbook = () => {
         <Button variant="secondary" size="sm" onClick={addFlight} style={{ marginBottom: 20 }}>
           + Tambah Aktivitas / Kejadian
         </Button>
-        {/* Highlighted Section: Laporan/Report */}
+        {/* Form untuk Report */}
         <hr style={{ margin: "2.5rem 0 1.5rem 0", borderTop: "2px dashed var(--color-accent, #023E8A)" }} />
         <div style={{ background: "var(--color-primary, #0096C7)", color: "#fff", borderRadius: 8, padding: "1rem 1rem", marginBottom: 20 }}>
           <h4 style={{ fontWeight: 700, margin: 0, fontSize: "1.13rem" }}>Laporan / Report</h4>
