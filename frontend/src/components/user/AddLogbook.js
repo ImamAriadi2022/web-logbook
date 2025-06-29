@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Form, Button, Alert, Row, Col, InputGroup } from "react-bootstrap";
+import { useState } from "react";
+import { Alert, Button, Col, Form, InputGroup, Row } from "react-bootstrap";
 
 // Helper untuk men-generate field dinamis
 const emptyFlight = {
@@ -210,6 +210,37 @@ const AddLogbook = () => {
             + Tambah Petugas
           </Button>
         </Form.Group>
+        
+        {/* Form untuk Koja dan Regu */}
+        <Row>
+          <Col md={6}>
+            <Form.Group className="mb-3">
+              <Form.Label>Koja</Form.Label>
+              <Form.Control
+                type="text"
+                name="koja"
+                value={watchroom.koja}
+                onChange={handleWatchroomChange}
+                placeholder="Contoh: Koja 1, Koja 2, dll"
+                required
+              />
+            </Form.Group>
+          </Col>
+          <Col md={6}>
+            <Form.Group className="mb-3">
+              <Form.Label>Regu Jaga</Form.Label>
+              <Form.Control
+                type="text"
+                name="regu"
+                value={watchroom.regu}
+                onChange={handleWatchroomChange}
+                placeholder="Contoh: Regu A, Regu B, dll"
+                required
+              />
+            </Form.Group>
+          </Col>
+        </Row>
+        
         {/* Form untuk Flights */}
         <hr style={{ margin: "2.5rem 0 1.5rem 0", borderTop: "2px dashed var(--color-accent, #023E8A)" }} />
         <h5 style={{ marginTop: 20, marginBottom: 10 }}>Aircraft Movement</h5>
@@ -236,7 +267,7 @@ const AddLogbook = () => {
                     name="operator"
                     value={flight.operator}
                     onChange={(e) => handleFlightChange(idx, e)}
-                    required
+                    placeholder="Contoh: Garuda, Lion Air, dll"
                   />
                 </Form.Group>
               </Col>
@@ -248,7 +279,7 @@ const AddLogbook = () => {
                     name="aircraftType"
                     value={flight.aircraftType}
                     onChange={(e) => handleFlightChange(idx, e)}
-                    required
+                    placeholder="Contoh: B737, A320, dll"
                   />
                 </Form.Group>
               </Col>
@@ -260,7 +291,7 @@ const AddLogbook = () => {
                     name="flightNumber"
                     value={flight.flightNumber}
                     onChange={(e) => handleFlightChange(idx, e)}
-                    required
+                    placeholder="Contoh: GA123, JT456, dll"
                   />
                 </Form.Group>
               </Col>
@@ -274,7 +305,7 @@ const AddLogbook = () => {
                     name="depArrFrom"
                     value={flight.depArrFrom}
                     onChange={(e) => handleFlightChange(idx, e)}
-                    required
+                    placeholder="Contoh: CGK, DPS, dll"
                   />
                 </Form.Group>
               </Col>
@@ -286,7 +317,7 @@ const AddLogbook = () => {
                     name="to"
                     value={flight.to}
                     onChange={(e) => handleFlightChange(idx, e)}
-                    required
+                    placeholder="Contoh: BTH, SBY, dll"
                   />
                 </Form.Group>
               </Col>
@@ -298,7 +329,7 @@ const AddLogbook = () => {
                     name="rwUse"
                     value={flight.rwUse}
                     onChange={(e) => handleFlightChange(idx, e)}
-                    required
+                    placeholder="Contoh: 05, 23, dll"
                   />
                 </Form.Group>
               </Col>
@@ -310,6 +341,7 @@ const AddLogbook = () => {
                     name="remarks"
                     value={flight.remarks}
                     onChange={(e) => handleFlightChange(idx, e)}
+                    placeholder="Catatan tambahan (opsional)"
                   />
                 </Form.Group>
               </Col>
@@ -345,7 +377,6 @@ const AddLogbook = () => {
                 value={report.hariKejadian}
                 onChange={handleReportChange}
                 placeholder="Senin, Selasa, ..."
-                required
               />
             </Form.Group>
           </Col>
@@ -357,7 +388,6 @@ const AddLogbook = () => {
                 name="tanggalKejadian"
                 value={report.tanggalKejadian}
                 onChange={handleReportChange}
-                required
               />
             </Form.Group>
           </Col>
@@ -369,7 +399,6 @@ const AddLogbook = () => {
                 name="waktuKejadian"
                 value={report.waktuKejadian}
                 onChange={handleReportChange}
-                required
               />
             </Form.Group>
           </Col>
@@ -382,7 +411,6 @@ const AddLogbook = () => {
                 value={report.cuaca}
                 onChange={handleReportChange}
                 placeholder="Cerah, Hujan, dll"
-                required
               />
             </Form.Group>
           </Col>
@@ -408,7 +436,7 @@ const AddLogbook = () => {
                 name="noPnb"
                 value={report.noPnb}
                 onChange={handleReportChange}
-                required
+                placeholder="Nomor Pilot Notified Briefing"
               />
             </Form.Group>
           </Col>
@@ -420,7 +448,7 @@ const AddLogbook = () => {
                 name="tipePesawat"
                 value={report.tipePesawat}
                 onChange={handleReportChange}
-                required
+                placeholder="Contoh: B737, A320, dll"
               />
             </Form.Group>
           </Col>
@@ -432,7 +460,7 @@ const AddLogbook = () => {
                 name="fasePenerbangan"
                 value={report.fasePenerbangan}
                 onChange={handleReportChange}
-                required
+                placeholder="Contoh: Takeoff, Landing, dll"
               />
             </Form.Group>
           </Col>
@@ -444,7 +472,7 @@ const AddLogbook = () => {
                 name="kerusakanPesawat"
                 value={report.kerusakanPesawat}
                 onChange={handleReportChange}
-                required
+                placeholder="Contoh: Sayap patah, Mesin mati, dll"
               />
             </Form.Group>
           </Col>
@@ -459,7 +487,7 @@ const AddLogbook = () => {
                 name="jenisFasilitas"
                 value={report.jenisFasilitas}
                 onChange={handleReportChange}
-                required
+                placeholder="Contoh: Runway, Taxiway, Apron, dll"
               />
             </Form.Group>
           </Col>
@@ -471,7 +499,7 @@ const AddLogbook = () => {
                 name="kerusakanFasilitas"
                 value={report.kerusakanFasilitas}
                 onChange={handleReportChange}
-                required
+                placeholder="Contoh: Lubang, Retakan, dll"
               />
             </Form.Group>
           </Col>
@@ -484,7 +512,6 @@ const AddLogbook = () => {
                 name="rincianKejadian"
                 value={report.rincianKejadian}
                 onChange={handleReportChange}
-                required
                 placeholder="Deskripsi kejadian secara detail"
               />
             </Form.Group>

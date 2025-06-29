@@ -8,6 +8,7 @@ const Dashboard = () => {
   const [summary, setSummary] = useState({ totalLog: 0, totalShift: 0, totalPetugas: 0 });
   const [aktivitasTerbaru, setAktivitasTerbaru] = useState([]);
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(true);
 
   // Helper function untuk format tanggal ke format Indonesia
   const formatDateForDisplay = (dateString) => {
@@ -76,7 +77,10 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchLogs = async () => {
       try {
-        const response = await fetch("https://web-logbook-bvjl.vercel.app/api/logbooks");
+        setLoading(true);
+        setError("");
+        
+        const response = await fetch("http://localhost:5000/api/logbooks");
         const data = await response.json();
 
         if (!response.ok) {
@@ -99,6 +103,9 @@ const Dashboard = () => {
           return {
             ...log,
             petugas: Array.isArray(log.petugas) ? log.petugas : JSON.parse(log.petugas || "[]"),
+            flights: Array.isArray(log.flights) ? log.flights : JSON.parse(log.flights || "[]"),
+            koja: parseIfNeeded(log.koja) || "Tidak tersedia",
+            regu: parseIfNeeded(log.regu) || "Tidak tersedia",
           };
         });
 
@@ -106,10 +113,20 @@ const Dashboard = () => {
 
         // Hitung ringkasan data
         const totalLog = formattedLogs.length;
-        const shiftSet = new Set(formattedLogs.map((log) => formatTimeForDisplay(log.jam)));
-        const petugasSet = new Set(formattedLogs.flatMap((log) => 
-          Array.isArray(log.petugas) ? log.petugas : []
-        ));
+        
+        // Hitung shift unik berdasarkan jam yang berbeda
+        const shiftSet = new Set(formattedLogs.map((log) => formatTimeForDisplay(log.jam)).filter(jam => jam !== "Tidak tersedia"));
+        
+        // Hitung petugas unik
+        const petugasSet = new Set();
+        formattedLogs.forEach(log => {
+          if (Array.isArray(log.petugas)) {
+            log.petugas.forEach(p => {
+              if (p && p.trim()) petugasSet.add(p.trim());
+            });
+          }
+        });
+        
         setSummary({
           totalLog,
           totalShift: shiftSet.size,
@@ -121,7 +138,7 @@ const Dashboard = () => {
           .map((log) => ({
             id: log.id,
             waktu: `${formatDateForDisplay(log.tanggal)} ${formatTimeForDisplay(log.jam)}`,
-            aktivitas: log.laporan || log.report?.kejadian || "Tidak ada kejadian",
+            aktivitas: log.kejadian || log.laporan || "Tidak ada kejadian",
             petugas: Array.isArray(log.petugas) ? log.petugas.join(", ") : "Tidak ada petugas",
           }))
           .sort((a, b) => new Date(b.tanggal) - new Date(a.tanggal))
@@ -130,7 +147,9 @@ const Dashboard = () => {
         setAktivitasTerbaru(aktivitas);
       } catch (error) {
         console.error("Error fetching logbooks:", error.message);
-        setError(error.message);
+        setError("Gagal memuat data logbook: " + error.message);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -147,7 +166,9 @@ const Dashboard = () => {
         <Col>
           <Card style={{ textAlign: "center", borderLeft: "5px solid var(--color-accent)" }}>
             <Card.Body>
-              <div style={{ fontSize: 22, fontWeight: 700 }}>{summary.totalLog}</div>
+              <div style={{ fontSize: 22, fontWeight: 700 }}>
+                {loading ? "..." : summary.totalLog}
+              </div>
               <div style={{ color: "#888" }}>Total Logbook</div>
             </Card.Body>
           </Card>
@@ -155,7 +176,9 @@ const Dashboard = () => {
         <Col>
           <Card style={{ textAlign: "center", borderLeft: "5px solid var(--color-cta)" }}>
             <Card.Body>
-              <div style={{ fontSize: 22, fontWeight: 700 }}>{summary.totalShift}</div>
+              <div style={{ fontSize: 22, fontWeight: 700 }}>
+                {loading ? "..." : summary.totalShift}
+              </div>
               <div style={{ color: "#888" }}>Total Shift</div>
             </Card.Body>
           </Card>
@@ -163,7 +186,9 @@ const Dashboard = () => {
         <Col>
           <Card style={{ textAlign: "center", borderLeft: "5px solid var(--color-primary)" }}>
             <Card.Body>
-              <div style={{ fontSize: 22, fontWeight: 700 }}>{summary.totalPetugas}</div>
+              <div style={{ fontSize: 22, fontWeight: 700 }}>
+                {loading ? "..." : summary.totalPetugas}
+              </div>
               <div style={{ color: "#888" }}>Total Petugas</div>
             </Card.Body>
           </Card>
@@ -177,15 +202,18 @@ const Dashboard = () => {
               Aktivitas Terbaru
             </Card.Header>
             <ListGroup variant="flush">
-              {aktivitasTerbaru.map((a) => (
-                <ListGroup.Item key={a.id}>
-                  <div style={{ fontWeight: 600 }}>{a.aktivitas}</div>
-                  <div style={{ fontSize: "0.97rem", color: "#888" }}>
-                    {a.waktu} &mdash; {a.petugas}
-                  </div>
-                </ListGroup.Item>
-              ))}
-              {aktivitasTerbaru.length === 0 && (
+              {loading ? (
+                <ListGroup.Item>Memuat aktivitas terbaru...</ListGroup.Item>
+              ) : aktivitasTerbaru.length > 0 ? (
+                aktivitasTerbaru.map((a) => (
+                  <ListGroup.Item key={a.id}>
+                    <div style={{ fontWeight: 600 }}>{a.aktivitas}</div>
+                    <div style={{ fontSize: "0.97rem", color: "#888" }}>
+                      {a.waktu} &mdash; {a.petugas}
+                    </div>
+                  </ListGroup.Item>
+                ))
+              ) : (
                 <ListGroup.Item>Tidak ada aktivitas terbaru.</ListGroup.Item>
               )}
             </ListGroup>
