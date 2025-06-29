@@ -14,7 +14,7 @@ const Manajemen = () => {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await fetch("https://web-logbook-bvjl.vercel.app/users/users");
+        const response = await fetch("https://web-logbook-bvjl.vercel.app/api/users/users");
         const data = await response.json();
 
         if (!response.ok) {
@@ -58,8 +58,8 @@ const Manajemen = () => {
     try {
       const method = editUser ? "PUT" : "POST";
       const endpoint = editUser
-        ? `https://web-logbook-bvjl.vercel.app/users/users/${editUser.id}`
-        : "https://web-logbook-bvjl.vercel.app/users/register";
+        ? `https://web-logbook-bvjl.vercel.app/api/users/users/${editUser.id}`
+        : "https://web-logbook-bvjl.vercel.app/api/users/register";
 
       const response = await fetch(endpoint, {
         method,
@@ -98,7 +98,7 @@ const Manajemen = () => {
   const handleDelete = async (id) => {
     if (window.confirm("Yakin ingin menghapus user ini?")) {
       try {
-        const response = await fetch(`https://web-logbook-bvjl.vercel.app/users/users/${id}`, {
+        const response = await fetch(`https://web-logbook-bvjl.vercel.app/api/users/users/${id}`, {
           method: "DELETE",
         });
 

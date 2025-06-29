@@ -31,7 +31,7 @@ const LogoutButton = () => {
 
   const handleLogout = async () => {
     try {
-      const response = await fetch("https://web-logbook-bvjl.vercel.app/users/logout", {
+      const response = await fetch("https://web-logbook-bvjl.vercel.app/api/users/logout", {
         method: "POST",
       });
 

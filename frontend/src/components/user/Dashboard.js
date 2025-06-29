@@ -76,7 +76,7 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchLogs = async () => {
       try {
-        const response = await fetch("https://web-logbook-bvjl.vercel.app/logbooks");
+        const response = await fetch("https://web-logbook-bvjl.vercel.app/api/logbooks");
         const data = await response.json();
 
         if (!response.ok) {

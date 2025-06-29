@@ -135,7 +135,7 @@ const DetailLogbook = () => {
   useEffect(() => {
     const fetchLogs = async () => {
       try {
-        const response = await fetch(`https://web-logbook-bvjl.vercel.app/logbooks/user/${user_id}`);
+        const response = await fetch(`https://web-logbook-bvjl.vercel.app/api/logbooks/user/${user_id}`);
         const data = await response.json();
 
         if (!response.ok) {

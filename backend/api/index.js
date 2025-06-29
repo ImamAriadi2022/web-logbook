@@ -48,24 +48,25 @@ app.get("/", (req, res) => {
         <p>Gunakan endpoint berikut untuk menguji:</p>
         <h2>🧑‍💻 Endpoint Pengguna</h2>
         <ul>
-          <li><strong>POST</strong> <code>/users/register</code></li>
-          <li><strong>POST</strong> <code>/users/login</code></li>
-          <li><strong>POST</strong> <code>/users/logout</code></li>
-          <li><strong>GET</strong> <code>/users</code></li>
-          <li><strong>POST</strong> <code>/users/add-admin</code></li>
-          <li><strong>GET</strong> <code>/users/admin</code></li>
-          <li><strong>GET</strong> <code>/users/:id</code></li>
-          <li><strong>PUT</strong> <code>/users/:id</code></li>
+          <li><strong>POST</strong> <code>/api/users/register</code></li>
+          <li><strong>POST</strong> <code>/api/users/login</code></li>
+          <li><strong>POST</strong> <code>/api/users/logout</code></li>
+          <li><strong>GET</strong> <code>/api/users/users</code></li>
+          <li><strong>POST</strong> <code>/api/users/add-admin</code></li>
+          <li><strong>GET</strong> <code>/api/users/admin</code></li>
+          <li><strong>GET</strong> <code>/api/users/users/:id</code></li>
+          <li><strong>PUT</strong> <code>/api/users/users/:id</code></li>
+          <li><strong>DELETE</strong> <code>/api/users/users/:id</code></li>
         </ul>
 
         <h2>📓 Endpoint Logbook</h2>
         <ul>
-          <li><strong>POST</strong> <code>/logbooks/add</code></li>
-          <li><strong>GET</strong> <code>/logbooks</code></li>
-          <li><strong>GET</strong> <code>/logbooks/:id</code></li>
-          <li><strong>GET</strong> <code>/logbooks/user/:userId</code></li>
-          <li><strong>PUT</strong> <code>/logbooks/:id</code></li>
-          <li><strong>DELETE</strong> <code>/logbooks/:id</code></li>
+          <li><strong>POST</strong> <code>/api/logbooks/add</code></li>
+          <li><strong>GET</strong> <code>/api/logbooks</code></li>
+          <li><strong>GET</strong> <code>/api/logbooks/:id</code></li>
+          <li><strong>GET</strong> <code>/api/logbooks/user/:userId</code></li>
+          <li><strong>PUT</strong> <code>/api/logbooks/:id</code></li>
+          <li><strong>DELETE</strong> <code>/api/logbooks/:id</code></li>
         </ul>
 
         <h2>Status Server</h2>
@@ -77,8 +78,8 @@ app.get("/", (req, res) => {
 });
 
 // Routing
-app.use("/users", userRoutes);
-app.use("/logbooks", logBookRoutes);
+app.use("/api/users", userRoutes);
+app.use("/api/logbooks", logBookRoutes);
 
 // Jalankan server
 app.listen(PORT, () => {

@@ -194,7 +194,7 @@ const SignForm = () => {
     setLoading(true);
 
     try {
-      const response = await fetch("https://web-logbook-bvjl.vercel.app/users/register", {
+      const response = await fetch("https://web-logbook-bvjl.vercel.app/api/users/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

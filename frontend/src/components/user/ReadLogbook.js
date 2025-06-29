@@ -27,7 +27,7 @@ const ReadLogbook = () => {
   useEffect(() => {
     const fetchLogs = async () => {
       try {
-        const response = await fetch(`https://web-logbook-bvjl.vercel.app/logbooks/user/${user_id}`);
+        const response = await fetch(`https://web-logbook-bvjl.vercel.app/api/logbooks/user/${user_id}`);
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -138,7 +138,7 @@ const ReadLogbook = () => {
   const handleDelete = async (id) => {
     if (window.confirm("Yakin ingin menghapus log ini?")) {
       try {
-        const response = await fetch(`https://web-logbook-bvjl.vercel.app/logbooks/${id}`, {
+        const response = await fetch(`https://web-logbook-bvjl.vercel.app/api/logbooks/${id}`, {
           method: "DELETE",
         });
 
@@ -194,7 +194,7 @@ const ReadLogbook = () => {
     };
   
     try {
-      const response = await fetch(`https://web-logbook-bvjl.vercel.app/logbooks/${editData.id}`, {
+      const response = await fetch(`https://web-logbook-bvjl.vercel.app/api/logbooks/${editData.id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

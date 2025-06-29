@@ -76,7 +76,7 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await fetch("https://web-logbook-bvjl.vercel.app/users/users");
+        const response = await fetch("https://web-logbook-bvjl.vercel.app/api/users/users");
         const data = await response.json();
 
         if (!response.ok) {
@@ -98,7 +98,7 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchLogbooks = async () => {
       try {
-        const response = await fetch("https://web-logbook-bvjl.vercel.app/logbooks");
+        const response = await fetch("https://web-logbook-bvjl.vercel.app/api/logbooks");
         const data = await response.json();
 
         if (!response.ok) {

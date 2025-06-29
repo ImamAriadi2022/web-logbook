@@ -89,7 +89,7 @@ const LoginForm = () => {
     setLoading(true);
 
     try {
-      const response = await fetch("https://web-logbook-bvjl.vercel.app/users/login", {
+      const response = await fetch("https://web-logbook-bvjl.vercel.app/api/users/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
