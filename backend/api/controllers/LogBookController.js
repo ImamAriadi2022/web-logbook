@@ -112,8 +112,9 @@ const updateLogbook = (req, res) => {
 
   console.log("Data yang diterima untuk update:", { id, watchroom, report });
 
-  if (!watchroom || !report) {
-    return res.status(400).json({ message: "Data watchroom dan report wajib diisi." });
+  // Validasi minimal - hanya pastikan ada data yang akan diupdate
+  if (!watchroom && !report) {
+    return res.status(400).json({ message: "Setidaknya salah satu data watchroom atau report harus diisi." });
   }
 
   // Ambil data logbook yang sudah ada dari database
@@ -130,27 +131,27 @@ const updateLogbook = (req, res) => {
     try {
       // Gunakan data yang sudah ada jika data baru kosong
       const updatedData = {
-        hari: watchroom.hari || originalLogbook.hari || "-",
-        tanggal: watchroom.tanggal || originalLogbook.tanggal || new Date().toISOString().split('T')[0],
-        jam: watchroom.jam || originalLogbook.jam || "00:00:00",
-        petugas: Array.isArray(watchroom.petugas) ? JSON.stringify(watchroom.petugas) : 
-                 watchroom.petugas || originalLogbook.petugas || "[]",
-        flights: Array.isArray(watchroom.flights) ? JSON.stringify(watchroom.flights) : 
-                 watchroom.flights || originalLogbook.flights || "[]",
-        koja: watchroom.koja || originalLogbook.koja || "-",
-        regu: watchroom.regu || originalLogbook.regu || "-",
-        hariKejadian: report.hariKejadian || originalLogbook.hariKejadian || "-",
-        tanggalKejadian: report.tanggalKejadian || originalLogbook.tanggalKejadian || new Date().toISOString().split('T')[0],
-        waktuKejadian: report.waktuKejadian || originalLogbook.waktuKejadian || "00:00:00",
-        cuaca: report.cuaca || originalLogbook.cuaca || "-",
-        kejadian: report.kejadian || originalLogbook.kejadian || "-",
-        noPnb: report.noPnb || originalLogbook.noPnb || null,
-        tipePesawat: report.tipePesawat || originalLogbook.tipePesawat || null,
-        fasePenerbangan: report.fasePenerbangan || originalLogbook.fasePenerbangan || null,
-        kerusakanPesawat: report.kerusakanPesawat || originalLogbook.kerusakanPesawat || null,
-        jenisFasilitas: report.jenisFasilitas || originalLogbook.jenisFasilitas || null,
-        kerusakanFasilitas: report.kerusakanFasilitas || originalLogbook.kerusakanFasilitas || null,
-        rincianKejadian: report.rincianKejadian || originalLogbook.rincianKejadian || null,
+        hari: (watchroom && watchroom.hari) || originalLogbook.hari || "-",
+        tanggal: (watchroom && watchroom.tanggal) || originalLogbook.tanggal || new Date().toISOString().split('T')[0],
+        jam: (watchroom && watchroom.jam) || originalLogbook.jam || "00:00:00",
+        petugas: (watchroom && Array.isArray(watchroom.petugas)) ? JSON.stringify(watchroom.petugas) : 
+                 (watchroom && watchroom.petugas) || originalLogbook.petugas || "[]",
+        flights: (watchroom && Array.isArray(watchroom.flights)) ? JSON.stringify(watchroom.flights) : 
+                 (watchroom && watchroom.flights) || originalLogbook.flights || "[]",
+        koja: (watchroom && watchroom.koja) || originalLogbook.koja || "-",
+        regu: (watchroom && watchroom.regu) || originalLogbook.regu || "-",
+        hariKejadian: (report && report.hariKejadian) || originalLogbook.hariKejadian || "-",
+        tanggalKejadian: (report && report.tanggalKejadian) || originalLogbook.tanggalKejadian || new Date().toISOString().split('T')[0],
+        waktuKejadian: (report && report.waktuKejadian) || originalLogbook.waktuKejadian || "00:00:00",
+        cuaca: (report && report.cuaca) || originalLogbook.cuaca || "-",
+        kejadian: (report && report.kejadian) || originalLogbook.kejadian || "-",
+        noPnb: (report && report.noPnb) || originalLogbook.noPnb || null,
+        tipePesawat: (report && report.tipePesawat) || originalLogbook.tipePesawat || null,
+        fasePenerbangan: (report && report.fasePenerbangan) || originalLogbook.fasePenerbangan || null,
+        kerusakanPesawat: (report && report.kerusakanPesawat) || originalLogbook.kerusakanPesawat || null,
+        jenisFasilitas: (report && report.jenisFasilitas) || originalLogbook.jenisFasilitas || null,
+        kerusakanFasilitas: (report && report.kerusakanFasilitas) || originalLogbook.kerusakanFasilitas || null,
+        rincianKejadian: (report && report.rincianKejadian) || originalLogbook.rincianKejadian || null,
       };
 
       console.log("Data yang akan diupdate:", updatedData);

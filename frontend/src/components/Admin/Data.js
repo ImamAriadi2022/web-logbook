@@ -158,18 +158,59 @@ const Data = () => {
   // Prefill form saat edit
   useEffect(() => {
     if (editData) {
+      // Helper function untuk format tanggal ke format input (YYYY-MM-DD)
+      const formatDateForInput = (dateString) => {
+        if (!dateString) return "";
+        try {
+          // Handle ISO format dates (with T and Z)
+          if (dateString.includes('T')) {
+            const date = new Date(dateString);
+            if (isNaN(date.getTime())) return "";
+            return date.toISOString().split('T')[0];
+          }
+          // Handle regular date format
+          const date = new Date(dateString);
+          if (isNaN(date.getTime())) return "";
+          return date.toISOString().split('T')[0];
+        } catch (error) {
+          return "";
+        }
+      };
+
+      // Helper function untuk format waktu ke format input (HH:MM)
+      const formatTimeForInput = (timeString) => {
+        if (!timeString) return "";
+        try {
+          if (timeString.includes('T')) {
+            const date = new Date(timeString);
+            if (isNaN(date.getTime())) return "";
+            const hours = date.getHours().toString().padStart(2, '0');
+            const minutes = date.getMinutes().toString().padStart(2, '0');
+            return `${hours}:${minutes}`;
+          } else if (timeString.includes(':')) {
+            const timeParts = timeString.split(':');
+            if (timeParts.length >= 2) {
+              return `${timeParts[0].padStart(2, '0')}:${timeParts[1].padStart(2, '0')}`;
+            }
+          }
+          return timeString;
+        } catch (error) {
+          return "";
+        }
+      };
+
       setFormData({
         hari: editData.hari || "",
-        tanggal: editData.tanggal || "",
-        jam: editData.jam || "",
+        tanggal: formatDateForInput(editData.tanggal),
+        jam: formatTimeForInput(editData.jam),
         petugas: editData.petugas || [],
         koja: editData.koja || "",
         regu: editData.regu || "",
         flights: editData.flights || [],
         // Report fields
         hariKejadian: editData.hariKejadian || "",
-        tanggalKejadian: editData.tanggalKejadian || "",
-        waktuKejadian: editData.waktuKejadian || "",
+        tanggalKejadian: formatDateForInput(editData.tanggalKejadian),
+        waktuKejadian: formatTimeForInput(editData.waktuKejadian),
         cuaca: editData.cuaca || "",
         kejadian: editData.kejadian || "",
         noPnb: editData.noPnb || "",
@@ -250,12 +291,60 @@ const Data = () => {
     setSuccess("");
 
     try {
+      // Helper function untuk format tanggal ke YYYY-MM-DD
+      const formatDateForInput = (dateString) => {
+        if (!dateString) return "";
+        try {
+          // Handle ISO format dates (with T and Z)
+          if (dateString.includes('T')) {
+            const date = new Date(dateString);
+            if (isNaN(date.getTime())) return "";
+            return date.toISOString().split('T')[0];
+          }
+          // Handle regular date format
+          const date = new Date(dateString);
+          if (isNaN(date.getTime())) return "";
+          return date.toISOString().split('T')[0];
+        } catch (error) {
+          return "";
+        }
+      };
+
+      // Format data sesuai yang diharapkan backend (watchroom dan report)
+      const requestData = {
+        watchroom: {
+          hari: formData.hari || editData.hari || "",
+          tanggal: formatDateForInput(formData.tanggal || editData.tanggal),
+          jam: formData.jam || editData.jam || "",
+          petugas: formData.petugas && formData.petugas.length > 0 ? formData.petugas : editData.petugas || [],
+          koja: formData.koja || editData.koja || "",
+          regu: formData.regu || editData.regu || "",
+          flights: formData.flights && formData.flights.length > 0 ? formData.flights : editData.flights || []
+        },
+        report: {
+          hariKejadian: formData.hariKejadian || editData.hariKejadian || "",
+          tanggalKejadian: formatDateForInput(formData.tanggalKejadian || editData.tanggalKejadian),
+          waktuKejadian: formData.waktuKejadian || editData.waktuKejadian || "",
+          cuaca: formData.cuaca || editData.cuaca || "",
+          kejadian: formData.kejadian || editData.kejadian || "",
+          noPnb: formData.noPnb || editData.noPnb || "",
+          tipePesawat: formData.tipePesawat || editData.tipePesawat || "",
+          fasePenerbangan: formData.fasePenerbangan || editData.fasePenerbangan || "",
+          kerusakanPesawat: formData.kerusakanPesawat || editData.kerusakanPesawat || "",
+          jenisFasilitas: formData.jenisFasilitas || editData.jenisFasilitas || "",
+          kerusakanFasilitas: formData.kerusakanFasilitas || editData.kerusakanFasilitas || "",
+          rincianKejadian: formData.rincianKejadian || editData.rincianKejadian || "",
+        }
+      };
+
+      console.log("Data yang akan dikirim:", requestData);
+
       const response = await fetch(`https://web-logbook-bvjl.vercel.app/api/logbooks/${editData.id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(requestData),
       });
 
       const data = await response.json();
@@ -264,7 +353,7 @@ const Data = () => {
         throw new Error(data.message || "Terjadi kesalahan saat menyimpan perubahan logbook");
       }
 
-      // Update local state
+      // Update local state dengan data yang sudah diformat
       setLogbook((prev) =>
         prev.map((log) =>
           log.id === editData.id ? { ...log, ...formData } : log
@@ -277,7 +366,7 @@ const Data = () => {
       }, 1500);
     } catch (error) {
       console.error("Error saving logbook:", error.message);
-      setError("Terjadi kesalahan saat menyimpan perubahan logbook");
+      setError("Terjadi kesalahan saat menyimpan perubahan logbook: " + error.message);
     }
   };
 
