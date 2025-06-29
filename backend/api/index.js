@@ -18,12 +18,15 @@ app.use(express.json());
 let isDbConnected = false;
 
 // Koneksi ke database
-db.connect((err) => {
+db.getConnection((err, connection) => {
   if (err) {
     console.error("❌ Gagal terhubung ke database:", err.message);
+    console.error("Error details:", err);
+    isDbConnected = false;
   } else {
     console.log("✅ Terhubung ke database");
     isDbConnected = true;
+    connection.release(); // Release connection back to pool
   }
 });
 
